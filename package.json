@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/crypto",
   "version": "1.0.0",
-  "description": "一个强大的加密库，支持多种加密算法和密钥管理",
+  "description": "功能完整的加解密模块，支持主流加密算法和中国国密算法",
   "type": "module",
   "main": "./lib/index.js",
   "module": "./es/index.js",
@@ -75,17 +75,26 @@
     "release:major": "pnpm tsx scripts/release.ts",
     "benchmark": "pnpm tsx scripts/benchmark.ts",
     "bundle-analyzer": "pnpm tsx scripts/bundle-analyzer.ts",
+    "example:basic": "pnpm tsx examples/basic-usage.ts",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "prepublishOnly": "pnpm check:all",
     "postpublish": "echo '🎉 Package published successfully!'"
   },
   "keywords": [
-    "vue",
-    "vue3",
-    "pinia",
-    "state-management",
+    "crypto",
+    "encryption",
+    "decryption",
+    "aes",
+    "rsa",
+    "sm2",
+    "sm3",
+    "sm4",
+    "hash",
+    "signature",
     "typescript",
-    "reactive",
-    "store",
+    "vue3",
     "ldesign"
   ],
   "author": "LDesign Team",
@@ -102,6 +111,10 @@
     "vue": "^3.3.0"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
+    "sm-crypto": "^0.3.13",
+    "node-forge": "^1.3.1",
+    "jsencrypt": "^3.3.2",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
@@ -109,7 +122,10 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node-forge": "^1.3.11",
     "@types/lodash-es": "^4.17.12",
+    "vitepress": "^1.0.0",
     "@types/node": "^20.10.6",
     "@vitest/coverage-v8": "^1.1.3",
     "@vitest/ui": "^1.1.3",

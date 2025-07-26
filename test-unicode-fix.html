@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicode编码修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Unicode编码修复测试</h1>
+    <p>测试安全的Base64编码函数是否能正确处理中文字符</p>
+
+    <div class="test-section">
+        <h3>测试输入</h3>
+        <textarea id="testInput" placeholder="请输入包含中文的测试文本...">你好世界！这是一个测试文本。Hello World! 🌍</textarea>
+        <button onclick="testEncoding()">测试编码/解码</button>
+        <button onclick="testOriginalBtoa()">测试原始btoa(会报错)</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        // 安全的Base64编码函数，支持Unicode
+        function safeBase64Encode(str) {
+            try {
+                // 使用TextEncoder将字符串转换为UTF-8字节
+                const encoder = new TextEncoder()
+                const bytes = encoder.encode(str)
+                
+                // 将字节数组转换为二进制字符串
+                let binary = ''
+                for (let i = 0; i < bytes.length; i++) {
+                    binary += String.fromCharCode(bytes[i])
+                }
+                
+                // 使用btoa编码二进制字符串
+                return btoa(binary)
+            } catch (error) {
+                // 降级方案：简单的十六进制编码
+                return Array.from(str).map(char => 
+                    char.charCodeAt(0).toString(16).padStart(4, '0')
+                ).join('')
+            }
+        }
+
+        // 安全的Base64解码函数，支持Unicode
+        function safeBase64Decode(encodedStr) {
+            try {
+                // 尝试Base64解码
+                const binary = atob(encodedStr)
+                
+                // 将二进制字符串转换为字节数组
+                const bytes = new Uint8Array(binary.length)
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i)
+                }
+                
+                // 使用TextDecoder将字节数组转换为UTF-8字符串
+                const decoder = new TextDecoder()
+                return decoder.decode(bytes)
+            } catch (error) {
+                // 降级方案：十六进制解码
+                try {
+                    const chars = []
+                    for (let i = 0; i < encodedStr.length; i += 4) {
+                        const hex = encodedStr.substr(i, 4)
+                        chars.push(String.fromCharCode(parseInt(hex, 16)))
+                    }
+                    return chars.join('')
+                } catch (e) {
+                    return encodedStr // 如果都失败了，返回原字符串
+                }
+            }
+        }
+
+        function testEncoding() {
+            const input = document.getElementById('testInput').value
+            const resultsDiv = document.getElementById('results')
+            
+            try {
+                const encoded = safeBase64Encode(input)
+                const decoded = safeBase64Decode(encoded)
+                
+                const isSuccess = decoded === input
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-section ${isSuccess ? 'success' : 'error'}">
+                        <h3>✅ 安全编码测试结果</h3>
+                        <p><strong>原始文本:</strong> ${input}</p>
+                        <div class="result"><strong>编码结果:</strong> ${encoded}</div>
+                        <p><strong>解码结果:</strong> ${decoded}</p>
+                        <p><strong>测试状态:</strong> ${isSuccess ? '✅ 成功' : '❌ 失败'}</p>
+                    </div>
+                `
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-section error">
+                        <h3>❌ 安全编码测试失败</h3>
+                        <p><strong>错误信息:</strong> ${error.message}</p>
+                    </div>
+                `
+            }
+        }
+
+        function testOriginalBtoa() {
+            const input = document.getElementById('testInput').value
+            const resultsDiv = document.getElementById('results')
+            
+            try {
+                const encoded = btoa(input)
+                const decoded = atob(encoded)
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-section success">
+                        <h3>原始btoa测试结果</h3>
+                        <p><strong>原始文本:</strong> ${input}</p>
+                        <div class="result"><strong>编码结果:</strong> ${encoded}</div>
+                        <p><strong>解码结果:</strong> ${decoded}</p>
+                        <p><strong>测试状态:</strong> ✅ 意外成功（可能输入只包含Latin1字符）</p>
+                    </div>
+                `
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-section error">
+                        <h3>❌ 原始btoa测试失败（预期结果）</h3>
+                        <p><strong>错误信息:</strong> ${error.message}</p>
+                        <p>这证明了原始btoa无法处理Unicode字符，需要使用安全编码函数。</p>
+                    </div>
+                `
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            testEncoding()
+        }
+    </script>
+</body>
+</html>
