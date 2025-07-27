@@ -70,9 +70,9 @@ import { createCrypto } from '@ldesign/crypto'
 
 // 创建加密实例
 const crypto = createCrypto({
-  debug: true,                    // 开发模式启用调试
+  debug: true, // 开发模式启用调试
   performance: { enabled: true }, // 启用性能监控
-  cache: { enabled: true }        // 启用缓存
+  cache: { enabled: true } // 启用缓存
 })
 
 // 初始化
@@ -90,7 +90,7 @@ async function setupCrypto() {
     performance: { enabled: true },
     cache: { enabled: true }
   })
-  
+
   await crypto.init()
   return crypto
 }
@@ -102,20 +102,20 @@ async function setupCrypto() {
 <script src="https://unpkg.com/@ldesign/crypto@latest/dist/index.umd.js"></script>
 <script>
   const { createCrypto } = LDesignCrypto
-  
+
   async function init() {
     const crypto = createCrypto({
       debug: true,
       performance: { enabled: true }
     })
-    
+
     await crypto.init()
-    
+
     // 使用加密功能
     const result = await crypto.sha256('Hello World')
     console.log('SHA256:', result.data)
   }
-  
+
   init()
 </script>
 ```
@@ -130,24 +130,24 @@ import { createCrypto } from '@ldesign/crypto'
 const crypto = createCrypto({
   // 默认编码格式
   defaultEncoding: 'hex',
-  
+
   // 性能监控配置
   performance: {
-    enabled: true,        // 启用性能监控
-    detailed: true,       // 详细监控信息
-    threshold: 100        // 性能阈值(ms)，超过会发出警告
+    enabled: true, // 启用性能监控
+    detailed: true, // 详细监控信息
+    threshold: 100 // 性能阈值(ms)，超过会发出警告
   },
-  
+
   // 缓存配置
   cache: {
-    enabled: true,        // 启用缓存
-    maxSize: 1000,        // 最大缓存条目数
-    ttl: 300000          // 缓存过期时间(ms)
+    enabled: true, // 启用缓存
+    maxSize: 1000, // 最大缓存条目数
+    ttl: 300000 // 缓存过期时间(ms)
   },
-  
+
   // 调试模式
   debug: process.env.NODE_ENV === 'development',
-  
+
   // 自定义插件
   plugins: [
     // 可以添加自定义插件
@@ -195,12 +195,12 @@ const crypto = createCrypto({
   debug: process.env.CRYPTO_DEBUG === 'true',
   cache: {
     enabled: true,
-    maxSize: parseInt(process.env.CRYPTO_CACHE_SIZE || '1000'),
-    ttl: parseInt(process.env.CRYPTO_CACHE_TTL || '300000')
+    maxSize: Number.parseInt(process.env.CRYPTO_CACHE_SIZE || '1000'),
+    ttl: Number.parseInt(process.env.CRYPTO_CACHE_TTL || '300000')
   },
   performance: {
     enabled: true,
-    threshold: parseInt(process.env.CRYPTO_PERFORMANCE_THRESHOLD || '100')
+    threshold: Number.parseInt(process.env.CRYPTO_PERFORMANCE_THRESHOLD || '100')
   }
 })
 ```
@@ -235,9 +235,9 @@ module.exports = {
   ],
   resolve: {
     fallback: {
-      "crypto": require.resolve("crypto-browserify"),
-      "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer")
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer')
     }
   }
 }
@@ -250,8 +250,8 @@ module.exports = {
 ```typescript
 // main.ts
 import { createApp } from 'vue'
-import LDesignCrypto from '@ldesign/crypto'
 import App from './App.vue'
+import LDesignCrypto from '@ldesign/crypto'
 
 const app = createApp(App)
 
@@ -276,7 +276,7 @@ const CryptoContext = createContext(null)
 
 export function CryptoProvider({ children }) {
   const [crypto, setCrypto] = useState(null)
-  
+
   useEffect(() => {
     const initCrypto = async () => {
       const instance = createCrypto({
@@ -286,10 +286,10 @@ export function CryptoProvider({ children }) {
       await instance.init()
       setCrypto(instance)
     }
-    
+
     initCrypto()
   }, [])
-  
+
   return (
     <CryptoContext.Provider value={crypto}>
       {children}
@@ -311,9 +311,9 @@ export default defineNuxtPlugin(async () => {
     debug: process.dev,
     performance: { enabled: true }
   })
-  
+
   await crypto.init()
-  
+
   return {
     provide: {
       crypto
@@ -334,11 +334,11 @@ async function testInstallation() {
     // 创建实例
     const crypto = createCrypto({ debug: true })
     await crypto.init()
-    
+
     // 测试哈希功能
     const hash = await crypto.sha256('Hello World')
     console.log('✅ 哈希功能正常:', hash.data)
-    
+
     // 测试AES加密
     const key = crypto.generateKey('AES', 256)
     const encrypted = await crypto.aesEncrypt('Test Data', {
@@ -346,14 +346,14 @@ async function testInstallation() {
       mode: 'CBC'
     })
     console.log('✅ AES加密功能正常:', encrypted.success)
-    
+
     // 测试国密算法
     const sm3Hash = await crypto.sm3('Hello SM3')
     console.log('✅ 国密算法正常:', sm3Hash.data)
-    
+
     console.log('🎉 安装验证成功！')
-    
-  } catch (error) {
+  }
+ catch (error) {
     console.error('❌ 安装验证失败:', error)
   }
 }
@@ -369,11 +369,11 @@ async function performanceTest() {
     performance: { enabled: true }
   })
   await crypto.init()
-  
+
   // 执行一些操作
   await crypto.sha256('test')
   await crypto.md5('test')
-  
+
   // 查看性能指标
   const metrics = crypto.getPerformanceMetrics()
   console.log('性能指标:', metrics)

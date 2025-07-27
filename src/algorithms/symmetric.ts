@@ -5,13 +5,11 @@
 
 import CryptoJS from 'crypto-js'
 import type {
-  SymmetricConfig,
-  CryptoResult,
-  CryptoPlugin,
-  CryptoAlgorithm,
-  EncodingFormat,
   AESMode,
-  PaddingMode
+  CryptoPlugin,
+  EncodingFormat,
+  PaddingMode,
+  SymmetricConfig,
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
 
@@ -30,7 +28,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       // 转换密钥和IV
@@ -44,7 +42,7 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       // 执行加密
@@ -52,12 +50,13 @@ export class SymmetricCrypto {
 
       // 返回结果
       return this.formatOutput(encrypted, outputEncoding, ivWords, mode !== 'ECB')
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `AES encryption failed: ${error}`,
         'AES',
-        error
+        error,
       )
     }
   }
@@ -73,7 +72,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'hex',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       // 转换密钥
@@ -86,7 +85,7 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       // 执行解密
@@ -94,12 +93,13 @@ export class SymmetricCrypto {
 
       // 返回结果
       return this.formatDecryptedOutput(decrypted, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `AES decryption failed: ${error}`,
         'AES',
-        error
+        error,
       )
     }
   }
@@ -115,7 +115,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const keyWords = CryptoJS.enc.Utf8.parse(key)
@@ -125,17 +125,18 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       const encrypted = CryptoJS.DES.encrypt(dataWords, keyWords, options)
       return this.formatOutput(encrypted, outputEncoding, ivWords, mode !== 'ECB')
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `DES encryption failed: ${error}`,
         'DES',
-        error
+        error,
       )
     }
   }
@@ -151,7 +152,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'hex',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       const keyWords = CryptoJS.enc.Utf8.parse(key)
@@ -160,17 +161,18 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       const decrypted = CryptoJS.DES.decrypt(ciphertext, keyWords, options)
       return this.formatDecryptedOutput(decrypted, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `DES decryption failed: ${error}`,
         'DES',
-        error
+        error,
       )
     }
   }
@@ -186,7 +188,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const keyWords = CryptoJS.enc.Utf8.parse(key)
@@ -196,17 +198,18 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       const encrypted = CryptoJS.TripleDES.encrypt(dataWords, keyWords, options)
       return this.formatOutput(encrypted, outputEncoding, ivWords, mode !== 'ECB')
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `3DES encryption failed: ${error}`,
         '3DES',
-        error
+        error,
       )
     }
   }
@@ -222,7 +225,7 @@ export class SymmetricCrypto {
         mode = 'CBC',
         padding = 'PKCS7',
         inputEncoding = 'hex',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       const keyWords = CryptoJS.enc.Utf8.parse(key)
@@ -231,17 +234,18 @@ export class SymmetricCrypto {
       const options: any = {
         iv: ivWords,
         mode: this.getMode(mode),
-        padding: this.getPadding(padding)
+        padding: this.getPadding(padding),
       }
 
       const decrypted = CryptoJS.TripleDES.decrypt(ciphertext, keyWords, options)
       return this.formatDecryptedOutput(decrypted, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `3DES decryption failed: ${error}`,
         '3DES',
-        error
+        error,
       )
     }
   }
@@ -256,13 +260,16 @@ export class SymmetricCrypto {
     if (key.length === 32) {
       // 128位密钥 (hex)
       return CryptoJS.enc.Hex.parse(key)
-    } else if (key.length === 48) {
+    }
+ else if (key.length === 48) {
       // 192位密钥 (hex)
       return CryptoJS.enc.Hex.parse(key)
-    } else if (key.length === 64) {
+    }
+ else if (key.length === 64) {
       // 256位密钥 (hex)
       return CryptoJS.enc.Hex.parse(key)
-    } else {
+    }
+ else {
       // UTF8字符串密钥
       return CryptoJS.enc.Utf8.parse(key)
     }
@@ -331,7 +338,7 @@ export class SymmetricCrypto {
     encrypted: CryptoJS.lib.CipherParams,
     encoding: EncodingFormat,
     iv: CryptoJS.lib.WordArray,
-    includeIV: boolean
+    includeIV: boolean,
   ): string {
     let result = encrypted.ciphertext.toString()
 
@@ -361,8 +368,8 @@ export class SymmetricCrypto {
     encryptedData: string,
     iv: string | undefined,
     encoding: EncodingFormat,
-    hasIV: boolean
-  ): { ciphertext: CryptoJS.lib.CipherParams; ivWords: CryptoJS.lib.WordArray } {
+    hasIV: boolean,
+  ): { ciphertext: CryptoJS.lib.CipherParams, ivWords: CryptoJS.lib.WordArray } {
     let dataHex = encryptedData
 
     // 转换编码格式为hex
@@ -385,18 +392,20 @@ export class SymmetricCrypto {
       // 从数据中提取IV
       ivWords = CryptoJS.enc.Hex.parse(dataHex.substring(0, 32)) // 16字节IV
       ciphertextHex = dataHex.substring(32)
-    } else if (iv) {
+    }
+ else if (iv) {
       // 使用提供的IV
       ivWords = CryptoJS.enc.Hex.parse(iv)
       ciphertextHex = dataHex
-    } else {
+    }
+ else {
       // 无IV模式
       ivWords = CryptoJS.lib.WordArray.create()
       ciphertextHex = dataHex
     }
 
     const ciphertext = CryptoJS.lib.CipherParams.create({
-      ciphertext: CryptoJS.enc.Hex.parse(ciphertextHex)
+      ciphertext: CryptoJS.enc.Hex.parse(ciphertextHex),
     })
 
     return { ciphertext, ivWords }
@@ -407,7 +416,7 @@ export class SymmetricCrypto {
    */
   private static formatDecryptedOutput(
     decrypted: CryptoJS.lib.WordArray,
-    encoding: EncodingFormat
+    encoding: EncodingFormat,
   ): string {
     switch (encoding) {
       case 'hex':
@@ -439,5 +448,5 @@ export const SymmetricPlugin: CryptoPlugin = {
   async destroy() {
     // 插件销毁逻辑
     console.log('[SymmetricPlugin] Destroyed')
-  }
+  },
 }

@@ -28,7 +28,7 @@ const decrypted = await crypto.aesDecrypt(result.data!, {
 
 **支持的密钥长度:**
 - AES-128: 16字节 (128位)
-- AES-192: 24字节 (192位)  
+- AES-192: 24字节 (192位)
 - AES-256: 32字节 (256位) ✅ 推荐
 
 **支持的加密模式:**
@@ -143,8 +143,8 @@ const result = await crypto.aesEncrypt('Hello World', {
 const result = await crypto.aesEncrypt('Hello World', {
   key: aesKey,
   mode: 'CBC',
-  inputEncoding: 'utf8',    // 输入编码
-  outputEncoding: 'base64'  // 输出编码
+  inputEncoding: 'utf8', // 输入编码
+  outputEncoding: 'base64' // 输出编码
 })
 
 // 支持的编码格式:
@@ -167,18 +167,18 @@ async function encryptFile(fileContent: string, password: string) {
     iterations: 10000,
     keyLength: 32
   })
-  
+
   if (!keyResult.success) {
     throw new Error('密钥派生失败')
   }
-  
+
   // AES-256-GCM 加密
   const encrypted = await crypto.aesEncrypt(fileContent, {
     key: keyResult.data!,
     mode: 'GCM',
     outputEncoding: 'base64'
   })
-  
+
   return encrypted.data
 }
 
@@ -190,14 +190,14 @@ async function decryptFile(encryptedContent: string, password: string) {
     iterations: 10000,
     keyLength: 32
   })
-  
+
   // 解密
   const decrypted = await crypto.aesDecrypt(encryptedContent, {
     key: keyResult.data!,
     mode: 'GCM',
     inputEncoding: 'base64'
   })
-  
+
   return decrypted.data
 }
 ```
@@ -207,36 +207,36 @@ async function decryptFile(encryptedContent: string, password: string) {
 ```typescript
 class EncryptedField {
   private key: string
-  
+
   constructor(key: string) {
     this.key = key
   }
-  
+
   async encrypt(value: string): Promise<string> {
     const result = await crypto.aesEncrypt(value, {
       key: this.key,
       mode: 'CBC',
       outputEncoding: 'base64'
     })
-    
+
     if (!result.success) {
-      throw new Error('加密失败: ' + result.error)
+      throw new Error(`加密失败: ${result.error}`)
     }
-    
+
     return result.data!
   }
-  
+
   async decrypt(encryptedValue: string): Promise<string> {
     const result = await crypto.aesDecrypt(encryptedValue, {
       key: this.key,
       mode: 'CBC',
       inputEncoding: 'base64'
     })
-    
+
     if (!result.success) {
-      throw new Error('解密失败: ' + result.error)
+      throw new Error(`解密失败: ${result.error}`)
     }
-    
+
     return result.data!
   }
 }
@@ -252,31 +252,31 @@ const originalEmail = await emailField.decrypt(encryptedEmail)
 ```typescript
 class SessionCrypto {
   private sessionKey: string
-  
+
   constructor() {
     // 为每个会话生成唯一密钥
     this.sessionKey = crypto.generateKey('AES', 256)
   }
-  
+
   async encryptSessionData(data: object): Promise<string> {
     const jsonData = JSON.stringify(data)
-    
+
     const result = await crypto.aesEncrypt(jsonData, {
       key: this.sessionKey,
       mode: 'GCM',
       outputEncoding: 'base64'
     })
-    
+
     return result.data!
   }
-  
+
   async decryptSessionData<T>(encryptedData: string): Promise<T> {
     const result = await crypto.aesDecrypt(encryptedData, {
       key: this.sessionKey,
       mode: 'GCM',
       inputEncoding: 'base64'
     })
-    
+
     return JSON.parse(result.data!)
   }
 }
@@ -289,11 +289,11 @@ class SessionCrypto {
 ```typescript
 async function encryptBatch(dataList: string[], key: string) {
   const results = await Promise.all(
-    dataList.map(data => 
+    dataList.map(data =>
       crypto.aesEncrypt(data, { key, mode: 'CBC' })
     )
   )
-  
+
   return results.map(result => result.data)
 }
 ```
@@ -325,7 +325,7 @@ const crypto = createCrypto({
 // ✅ 推荐的加密方式
 const result = await crypto.aesEncrypt(data, {
   key: crypto.generateKey('AES', 256), // 强密钥
-  mode: 'GCM',                         // 认证加密
+  mode: 'GCM', // 认证加密
   outputEncoding: 'base64'
 })
 ```
@@ -340,8 +340,8 @@ const result = await crypto.aesEncrypt(data, {
 ```typescript
 // ❌ 不安全的做法
 const result = await crypto.aesEncrypt(data, {
-  key: '123456',        // 弱密钥
-  mode: 'ECB',          // 不安全的模式
+  key: '123456', // 弱密钥
+  mode: 'ECB', // 不安全的模式
   iv: '1234567890123456' // 固定 IV
 })
 ```
@@ -351,14 +351,15 @@ const result = await crypto.aesEncrypt(data, {
 ```typescript
 try {
   const result = await crypto.aesEncrypt(data, config)
-  
+
   if (!result.success) {
     console.error('加密失败:', result.error)
     return
   }
-  
+
   console.log('加密成功:', result.data)
-} catch (error) {
+}
+ catch (error) {
   if (error instanceof CryptoError) {
     switch (error.type) {
       case CryptoErrorType.INVALID_KEY:
@@ -377,6 +378,6 @@ try {
 ## 下一步
 
 - 了解 [非对称加密](/guide/asymmetric) 的使用方法
-- 学习 [哈希算法](/guide/hash) 的应用场景  
+- 学习 [哈希算法](/guide/hash) 的应用场景
 - 探索 [国密算法](/guide/sm-crypto) 的特性
 - 体验 [在线演示](/demo/playground) 实时测试

@@ -72,88 +72,9 @@ console.log('HMAC:', hmac)
 ### 基础组件
 
 ```vue
-<template>
-  <div class="crypto-demo">
-    <h2>加密演示</h2>
-    
-    <!-- 输入区域 -->
-    <div class="input-section">
-      <label>输入文本:</label>
-      <textarea 
-        v-model="inputText" 
-        placeholder="请输入要加密的文本"
-        rows="3"
-      ></textarea>
-    </div>
-    
-    <!-- 操作按钮 -->
-    <div class="actions">
-      <button @click="encryptText" :disabled="!inputText || isLoading">
-        {{ isLoading ? '加密中...' : '加密' }}
-      </button>
-      
-      <button @click="decryptText" :disabled="!encryptedData || isLoading">
-        {{ isLoading ? '解密中...' : '解密' }}
-      </button>
-      
-      <button @click="hashText" :disabled="!inputText || isLoading">
-        计算哈希
-      </button>
-      
-      <button @click="clearAll">
-        清空
-      </button>
-    </div>
-    
-    <!-- 结果显示 -->
-    <div class="results">
-      <div v-if="encryptedData" class="result-item">
-        <h3>加密结果</h3>
-        <div class="result-content">
-          <p><strong>密文:</strong></p>
-          <code>{{ encryptedData.ciphertext }}</code>
-          
-          <p><strong>初始化向量:</strong></p>
-          <code>{{ encryptedData.iv }}</code>
-          
-          <p><strong>算法:</strong> {{ encryptedData.algorithm }}</p>
-          <p><strong>模式:</strong> {{ encryptedData.mode }}</p>
-        </div>
-      </div>
-      
-      <div v-if="decryptedText" class="result-item">
-        <h3>解密结果</h3>
-        <div class="result-content">
-          <p>{{ decryptedText }}</p>
-          <p class="success">✓ 解密成功</p>
-        </div>
-      </div>
-      
-      <div v-if="hashResult" class="result-item">
-        <h3>哈希结果</h3>
-        <div class="result-content">
-          <p><strong>SHA-256:</strong></p>
-          <code>{{ hashResult }}</code>
-          
-          <button @click="copyToClipboard(hashResult)" class="copy-btn">
-            复制
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 错误显示 -->
-    <div v-if="error" class="error">
-      <h3>错误</h3>
-      <p>{{ error.message }}</p>
-      <button @click="clearError">清除错误</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useSymmetricCrypto, useHash } from '@ldesign/crypto'
+import { onMounted, ref } from 'vue'
+import { useHash, useSymmetricCrypto } from '@ldesign/crypto'
 
 // 响应式数据
 const inputText = ref('')
@@ -176,83 +97,94 @@ onMounted(async () => {
     // 生成加密密钥
     encryptionKey.value = generateKey('AES', 256)
     console.log('加密密钥已生成')
-  } catch (err) {
+  }
+ catch (err) {
     error.value = err
   }
 })
 
 // 加密文本
-const encryptText = async () => {
-  if (!inputText.value.trim()) return
-  
+async function encryptText() {
+  if (!inputText.value.trim())
+return
+
   isLoading.value = true
   error.value = null
-  
+
   try {
     const result = await aesEncrypt(inputText.value, {
       key: encryptionKey.value,
       mode: 'CBC'
     })
-    
+
     encryptedData.value = result
     console.log('加密完成:', result)
-  } catch (err) {
+  }
+ catch (err) {
     error.value = err
     console.error('加密失败:', err)
-  } finally {
+  }
+ finally {
     isLoading.value = false
   }
 }
 
 // 解密文本
-const decryptText = async () => {
-  if (!encryptedData.value) return
-  
+async function decryptText() {
+  if (!encryptedData.value)
+return
+
   isLoading.value = true
   error.value = null
-  
+
   try {
     const result = await aesDecrypt(encryptedData.value.ciphertext, {
       key: encryptionKey.value,
       mode: 'CBC',
       iv: encryptedData.value.iv
     })
-    
+
     decryptedText.value = result.plaintext
     console.log('解密完成:', result.plaintext)
-  } catch (err) {
+  }
+ catch (err) {
     error.value = err
     console.error('解密失败:', err)
-  } finally {
+  }
+ finally {
     isLoading.value = false
   }
 }
 
 // 计算哈希
-const hashText = async () => {
-  if (!inputText.value.trim()) return
-  
+async function hashText() {
+  if (!inputText.value.trim())
+return
+
   isLoading.value = true
   error.value = null
-  
+
   try {
     const hash = await sha256(inputText.value)
     hashResult.value = hash
     console.log('哈希计算完成:', hash)
-  } catch (err) {
+  }
+ catch (err) {
     error.value = err
     console.error('哈希计算失败:', err)
-  } finally {
+  }
+ finally {
     isLoading.value = false
   }
 }
 
 // 复制到剪贴板
-const copyToClipboard = async (text) => {
+async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text)
     alert('已复制到剪贴板')
-  } catch (err) {
+  }
+ catch (err) {
     console.error('复制失败:', err)
     // 降级方案
     const textArea = document.createElement('textarea')
@@ -266,7 +198,7 @@ const copyToClipboard = async (text) => {
 }
 
 // 清空所有数据
-const clearAll = () => {
+function clearAll() {
   inputText.value = ''
   encryptedData.value = null
   decryptedText.value = ''
@@ -275,10 +207,93 @@ const clearAll = () => {
 }
 
 // 清除错误
-const clearError = () => {
+function clearError() {
   error.value = null
 }
 </script>
+
+<template>
+  <div class="crypto-demo">
+    <h2>加密演示</h2>
+
+    <!-- 输入区域 -->
+    <div class="input-section">
+      <label>输入文本:</label>
+      <textarea
+        v-model="inputText"
+        placeholder="请输入要加密的文本"
+        rows="3"
+      />
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="actions">
+      <button :disabled="!inputText || isLoading" @click="encryptText">
+        {{ isLoading ? '加密中...' : '加密' }}
+      </button>
+
+      <button :disabled="!encryptedData || isLoading" @click="decryptText">
+        {{ isLoading ? '解密中...' : '解密' }}
+      </button>
+
+      <button :disabled="!inputText || isLoading" @click="hashText">
+        计算哈希
+      </button>
+
+      <button @click="clearAll">
+        清空
+      </button>
+    </div>
+
+    <!-- 结果显示 -->
+    <div class="results">
+      <div v-if="encryptedData" class="result-item">
+        <h3>加密结果</h3>
+        <div class="result-content">
+          <p><strong>密文:</strong></p>
+          <code>{{ encryptedData.ciphertext }}</code>
+
+          <p><strong>初始化向量:</strong></p>
+          <code>{{ encryptedData.iv }}</code>
+
+          <p><strong>算法:</strong> {{ encryptedData.algorithm }}</p>
+          <p><strong>模式:</strong> {{ encryptedData.mode }}</p>
+        </div>
+      </div>
+
+      <div v-if="decryptedText" class="result-item">
+        <h3>解密结果</h3>
+        <div class="result-content">
+          <p>{{ decryptedText }}</p>
+          <p class="success">
+            ✓ 解密成功
+          </p>
+        </div>
+      </div>
+
+      <div v-if="hashResult" class="result-item">
+        <h3>哈希结果</h3>
+        <div class="result-content">
+          <p><strong>SHA-256:</strong></p>
+          <code>{{ hashResult }}</code>
+
+          <button class="copy-btn" @click="copyToClipboard(hashResult)">
+            复制
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 错误显示 -->
+    <div v-if="error" class="error">
+      <h3>错误</h3>
+      <p>{{ error.message }}</p>
+      <button @click="clearError">
+        清除错误
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .crypto-demo {
@@ -432,11 +447,11 @@ const clearError = () => {
   .crypto-demo {
     padding: 1rem;
   }
-  
+
   .actions {
     flex-direction: column;
   }
-  
+
   .actions button {
     width: 100%;
   }
@@ -449,7 +464,7 @@ const clearError = () => {
 ### 基础 Hook
 
 ```typescript
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createCrypto } from '@ldesign/crypto'
 
 export function useCrypto() {
@@ -464,11 +479,12 @@ export function useCrypto() {
           provider: 'software',
           cache: { enabled: true }
         })
-        
+
         await instance.init()
         setCrypto(instance)
         setIsInitialized(true)
-      } catch (err) {
+      }
+ catch (err) {
         setError(err)
       }
     }
@@ -477,17 +493,20 @@ export function useCrypto() {
   }, [])
 
   const encrypt = useCallback(async (data, options) => {
-    if (!crypto) throw new Error('Crypto not initialized')
+    if (!crypto)
+throw new Error('Crypto not initialized')
     return crypto.aesEncrypt(data, options)
   }, [crypto])
 
   const decrypt = useCallback(async (data, options) => {
-    if (!crypto) throw new Error('Crypto not initialized')
+    if (!crypto)
+throw new Error('Crypto not initialized')
     return crypto.aesDecrypt(data, options)
   }, [crypto])
 
   const hash = useCallback(async (data, algorithm = 'SHA-256') => {
-    if (!crypto) throw new Error('Crypto not initialized')
+    if (!crypto)
+throw new Error('Crypto not initialized')
     return crypto.hash(data, algorithm)
   }, [crypto])
 
@@ -523,8 +542,9 @@ export function CryptoDemo() {
   })
 
   const handleEncrypt = async () => {
-    if (!inputText.trim()) return
-    
+    if (!inputText.trim())
+return
+
     setIsLoading(true)
     try {
       const result = await encrypt(inputText, {
@@ -532,16 +552,19 @@ export function CryptoDemo() {
         mode: 'CBC'
       })
       setEncryptedData(result)
-    } catch (err) {
+    }
+ catch (err) {
       console.error('Encryption failed:', err)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }
 
   const handleDecrypt = async () => {
-    if (!encryptedData) return
-    
+    if (!encryptedData)
+return
+
     setIsLoading(true)
     try {
       const result = await decrypt(encryptedData.ciphertext, {
@@ -550,23 +573,28 @@ export function CryptoDemo() {
         iv: encryptedData.iv
       })
       setDecryptedText(result.plaintext)
-    } catch (err) {
+    }
+ catch (err) {
       console.error('Decryption failed:', err)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }
 
   const handleHash = async () => {
-    if (!inputText.trim()) return
-    
+    if (!inputText.trim())
+return
+
     setIsLoading(true)
     try {
       const result = await hash(inputText, 'SHA-256')
       setHashResult(result)
-    } catch (err) {
+    }
+ catch (err) {
       console.error('Hash calculation failed:', err)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }
@@ -576,37 +604,42 @@ export function CryptoDemo() {
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>
+    return (
+<div>
+Error:
+{error.message}
+</div>
+)
   }
 
   return (
     <div className="crypto-demo">
       <h2>Crypto Demo</h2>
-      
+
       <div className="input-section">
         <label>Input Text:</label>
         <textarea
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={e => setInputText(e.target.value)}
           placeholder="Enter text to encrypt"
           rows={3}
         />
       </div>
-      
+
       <div className="actions">
         <button onClick={handleEncrypt} disabled={!inputText || isLoading}>
           {isLoading ? 'Encrypting...' : 'Encrypt'}
         </button>
-        
+
         <button onClick={handleDecrypt} disabled={!encryptedData || isLoading}>
           {isLoading ? 'Decrypting...' : 'Decrypt'}
         </button>
-        
+
         <button onClick={handleHash} disabled={!inputText || isLoading}>
           Calculate Hash
         </button>
       </div>
-      
+
       {encryptedData && (
         <div className="result-item">
           <h3>Encrypted Result</h3>
@@ -616,14 +649,14 @@ export function CryptoDemo() {
           <code>{encryptedData.iv}</code>
         </div>
       )}
-      
+
       {decryptedText && (
         <div className="result-item">
           <h3>Decrypted Result</h3>
           <p>{decryptedText}</p>
         </div>
       )}
-      
+
       {hashResult && (
         <div className="result-item">
           <h3>Hash Result</h3>
@@ -638,8 +671,8 @@ export function CryptoDemo() {
 ## Node.js 服务端示例
 
 ```typescript
-import { createCrypto } from '@ldesign/crypto'
 import express from 'express'
+import { createCrypto } from '@ldesign/crypto'
 
 const app = express()
 app.use(express.json())
@@ -655,21 +688,22 @@ await crypto.init()
 app.post('/api/encrypt', async (req, res) => {
   try {
     const { data, key } = req.body
-    
+
     if (!data || !key) {
       return res.status(400).json({ error: 'Missing data or key' })
     }
-    
+
     const encrypted = await crypto.aesEncrypt(data, {
       key,
       mode: 'GCM'
     })
-    
+
     res.json({
       success: true,
       result: encrypted
     })
-  } catch (error) {
+  }
+ catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
@@ -681,19 +715,20 @@ app.post('/api/encrypt', async (req, res) => {
 app.post('/api/decrypt', async (req, res) => {
   try {
     const { ciphertext, key, iv, tag } = req.body
-    
+
     const decrypted = await crypto.aesDecrypt(ciphertext, {
       key,
       mode: 'GCM',
       iv,
       tag
     })
-    
+
     res.json({
       success: true,
       result: decrypted.plaintext
     })
-  } catch (error) {
+  }
+ catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
@@ -705,14 +740,15 @@ app.post('/api/decrypt', async (req, res) => {
 app.post('/api/hash', async (req, res) => {
   try {
     const { data, algorithm = 'SHA-256' } = req.body
-    
+
     const hash = await crypto.hash(data, algorithm)
-    
+
     res.json({
       success: true,
       result: hash
     })
-  } catch (error) {
+  }
+ catch (error) {
     res.status(500).json({
       success: false,
       error: error.message

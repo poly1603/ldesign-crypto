@@ -2,21 +2,17 @@
  * @ldesign/crypto - 单元测试
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { CryptoAPI } from '../src/core/CryptoAPI'
-import { SymmetricCrypto } from '../src/algorithms/symmetric'
-import { RSACrypto } from '../src/algorithms/asymmetric'
-import { HashCrypto } from '../src/algorithms/hash'
-import { SM2Crypto, SM3Crypto, SM4Crypto } from '../src/algorithms/sm'
 
-describe('CryptoAPI', () => {
+describe('cryptoAPI', () => {
   let crypto: CryptoAPI
 
   beforeAll(async () => {
     crypto = new CryptoAPI({
       debug: true,
       performance: { enabled: true },
-      cache: { enabled: true }
+      cache: { enabled: true },
     })
     await crypto.init()
   })
@@ -29,11 +25,11 @@ describe('CryptoAPI', () => {
     const testData = 'Hello, LDesign Crypto!'
     const key = '1234567890123456' // 16字节密钥
 
-    it('AES加密解密', async () => {
+    it('aES加密解密', async () => {
       const config = {
         key: '12345678901234567890123456789012', // 32字节密钥
         mode: 'CBC' as const,
-        padding: 'PKCS7' as const
+        padding: 'PKCS7' as const,
       }
 
       const encryptResult = await crypto.aesEncrypt(testData, config)
@@ -45,10 +41,10 @@ describe('CryptoAPI', () => {
       expect(decryptResult.data).toBe(testData)
     })
 
-    it('DES加密解密', async () => {
+    it('dES加密解密', async () => {
       const config = {
         key: '12345678', // 8字节密钥
-        mode: 'CBC' as const
+        mode: 'CBC' as const,
       }
 
       const encryptResult = await crypto.desEncrypt(testData, config)
@@ -62,7 +58,7 @@ describe('CryptoAPI', () => {
     it('3DES加密解密', async () => {
       const config = {
         key: '123456789012345678901234', // 24字节密钥
-        mode: 'CBC' as const
+        mode: 'CBC' as const,
       }
 
       const encryptResult = await crypto.tripleDesEncrypt(testData, config)
@@ -77,38 +73,38 @@ describe('CryptoAPI', () => {
   describe('非对称加密', () => {
     const testData = 'Hello, RSA!'
 
-    it('RSA密钥生成', async () => {
+    it('rSA密钥生成', async () => {
       const keyPair = await crypto.generateRSAKeyPair(1024) // 使用较小的密钥以加快测试
       expect(keyPair.publicKey).toBeDefined()
       expect(keyPair.privateKey).toBeDefined()
       expect(keyPair.format).toBe('PEM')
     })
 
-    it('RSA加密解密', async () => {
+    it('rSA加密解密', async () => {
       const keyPair = await crypto.generateRSAKeyPair(1024)
-      
+
       const encryptResult = await crypto.rsaEncrypt(testData, {
-        publicKey: keyPair.publicKey
+        publicKey: keyPair.publicKey,
       })
       expect(encryptResult.success).toBe(true)
 
       const decryptResult = await crypto.rsaDecrypt(encryptResult.data!, {
-        privateKey: keyPair.privateKey
+        privateKey: keyPair.privateKey,
       })
       expect(decryptResult.success).toBe(true)
       expect(decryptResult.data).toBe(testData)
     })
 
-    it('RSA签名验证', async () => {
+    it('rSA签名验证', async () => {
       const keyPair = await crypto.generateRSAKeyPair(1024)
-      
+
       const signature = await crypto.rsaSign(testData, {
-        privateKey: keyPair.privateKey
+        privateKey: keyPair.privateKey,
       })
       expect(signature.signature).toBeDefined()
 
       const verifyResult = await crypto.rsaVerify(testData, signature.signature, {
-        publicKey: keyPair.publicKey
+        publicKey: keyPair.publicKey,
       })
       expect(verifyResult.valid).toBe(true)
     })
@@ -117,33 +113,33 @@ describe('CryptoAPI', () => {
   describe('哈希算法', () => {
     const testData = 'Hello, Hash!'
 
-    it('MD5哈希', async () => {
+    it('mD5哈希', async () => {
       const result = await crypto.md5(testData)
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       expect(result.data!.length).toBe(32) // MD5输出32个字符
     })
 
-    it('SHA256哈希', async () => {
+    it('sHA256哈希', async () => {
       const result = await crypto.sha256(testData)
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       expect(result.data!.length).toBe(64) // SHA256输出64个字符
     })
 
-    it('SHA512哈希', async () => {
+    it('sHA512哈希', async () => {
       const result = await crypto.sha512(testData)
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       expect(result.data!.length).toBe(128) // SHA512输出128个字符
     })
 
-    it('PBKDF2密钥派生', async () => {
+    it('pBKDF2密钥派生', async () => {
       const result = await crypto.pbkdf2({
         password: 'password',
         salt: 'salt',
         iterations: 1000,
-        keyLength: 32
+        keyLength: 32,
       })
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
@@ -154,50 +150,50 @@ describe('CryptoAPI', () => {
   describe('国密算法', () => {
     const testData = 'Hello, 国密!'
 
-    it('SM2密钥生成', async () => {
+    it('sM2密钥生成', async () => {
       const keyPair = await crypto.generateSM2KeyPair()
       expect(keyPair.publicKey).toBeDefined()
       expect(keyPair.privateKey).toBeDefined()
       expect(keyPair.format).toBe('HEX')
     })
 
-    it('SM2加密解密', async () => {
+    it('sM2加密解密', async () => {
       const keyPair = await crypto.generateSM2KeyPair()
-      
+
       const encryptResult = await crypto.sm2Encrypt(testData, {
-        publicKey: keyPair.publicKey
+        publicKey: keyPair.publicKey,
       })
       expect(encryptResult.success).toBe(true)
 
       const decryptResult = await crypto.sm2Decrypt(encryptResult.data!, {
-        privateKey: keyPair.privateKey
+        privateKey: keyPair.privateKey,
       })
       expect(decryptResult.success).toBe(true)
       expect(decryptResult.data).toBe(testData)
     })
 
-    it('SM2签名验证', async () => {
+    it('sM2签名验证', async () => {
       const keyPair = await crypto.generateSM2KeyPair()
-      
+
       const signature = await crypto.sm2Sign(testData, {
-        privateKey: keyPair.privateKey
+        privateKey: keyPair.privateKey,
       })
       expect(signature.signature).toBeDefined()
 
       const verifyResult = await crypto.sm2Verify(testData, signature.signature, {
-        publicKey: keyPair.publicKey
+        publicKey: keyPair.publicKey,
       })
       expect(verifyResult.valid).toBe(true)
     })
 
-    it('SM3哈希', async () => {
+    it('sM3哈希', async () => {
       const result = await crypto.sm3(testData)
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       expect(result.data!.length).toBe(64) // SM3输出64个字符
     })
 
-    it('SM4加密解密', async () => {
+    it('sM4加密解密', async () => {
       const key = crypto.generateKey('SM4')
       const config = { key }
 
@@ -218,7 +214,7 @@ describe('CryptoAPI', () => {
 
       const random2 = crypto.generateRandom({ length: 20, charset: 'alphanumeric' })
       expect(random2.length).toBe(20)
-      expect(/^[A-Za-z0-9]+$/.test(random2)).toBe(true)
+      expect(/^[A-Z0-9]+$/i.test(random2)).toBe(true)
     })
 
     it('生成密钥', () => {

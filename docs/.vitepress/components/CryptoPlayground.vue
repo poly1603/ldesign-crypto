@@ -1,167 +1,3 @@
-<template>
-  <div class="crypto-playground">
-    <!-- 算法选择 -->
-    <div class="algorithm-selector">
-      <h3>🔧 选择算法类型</h3>
-      <div class="algorithm-tabs">
-        <button
-          v-for="tab in algorithmTabs"
-          :key="tab.key"
-          :class="['tab-btn', { active: activeTab === tab.key }]"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.icon }} {{ tab.label }}
-        </button>
-      </div>
-    </div>
-
-    <!-- 对称加密 -->
-    <div v-if="activeTab === 'symmetric'" class="algorithm-panel">
-      <h3>🔒 对称加密</h3>
-
-      <div class="form-group">
-        <label>算法:</label>
-        <select v-model="symmetricAlgorithm">
-          <option value="AES">AES (推荐)</option>
-          <option value="DES">DES (兼容)</option>
-          <option value="3DES">3DES (兼容)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>待加密数据:</label>
-        <textarea v-model="symmetricData" placeholder="输入要加密的数据"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>密钥:</label>
-        <div class="key-input">
-          <input v-model="symmetricKey" :placeholder="getKeyPlaceholder(symmetricAlgorithm)" />
-          <button @click="generateSymmetricKey" class="btn-generate">生成</button>
-        </div>
-      </div>
-
-      <div class="button-group">
-        <button @click="encryptSymmetric" :disabled="isLoading" class="btn-primary">
-          {{ isLoading ? '加密中...' : '🔒 加密' }}
-        </button>
-        <button @click="decryptSymmetric" :disabled="isLoading" class="btn-secondary">
-          {{ isLoading ? '解密中...' : '🔓 解密' }}
-        </button>
-      </div>
-
-      <div v-if="symmetricResult" class="result-panel">
-        <h4>结果:</h4>
-        <div class="result-content">{{ symmetricResult }}</div>
-        <button @click="copyToClipboard(symmetricResult)" class="btn-copy">📋 复制</button>
-      </div>
-    </div>
-
-    <!-- 非对称加密 -->
-    <div v-if="activeTab === 'asymmetric'" class="algorithm-panel">
-      <h3>🔑 非对称加密</h3>
-
-      <div class="form-group">
-        <label>算法:</label>
-        <select v-model="asymmetricAlgorithm">
-          <option value="RSA">RSA</option>
-          <option value="SM2">SM2 (国密)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <button @click="generateAsymmetricKeys" :disabled="isLoading" class="btn-generate">
-          {{ isLoading ? '生成中...' : '🔑 生成密钥对' }}
-        </button>
-      </div>
-
-      <div v-if="asymmetricKeys" class="key-display">
-        <div class="key-item">
-          <label>公钥:</label>
-          <textarea :value="asymmetricKeys.publicKey" readonly></textarea>
-        </div>
-        <div class="key-item">
-          <label>私钥:</label>
-          <textarea :value="asymmetricKeys.privateKey" readonly></textarea>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>待加密数据:</label>
-        <textarea v-model="asymmetricData" placeholder="输入要加密的数据"></textarea>
-      </div>
-
-      <div class="button-group">
-        <button @click="encryptAsymmetric" :disabled="isLoading || !asymmetricKeys" class="btn-primary">
-          {{ isLoading ? '加密中...' : '🔒 公钥加密' }}
-        </button>
-        <button @click="decryptAsymmetric" :disabled="isLoading || !asymmetricKeys" class="btn-secondary">
-          {{ isLoading ? '解密中...' : '🔓 私钥解密' }}
-        </button>
-      </div>
-
-      <div v-if="asymmetricResult" class="result-panel">
-        <h4>结果:</h4>
-        <div class="result-content">{{ asymmetricResult }}</div>
-        <button @click="copyToClipboard(asymmetricResult)" class="btn-copy">📋 复制</button>
-      </div>
-    </div>
-
-    <!-- 哈希算法 -->
-    <div v-if="activeTab === 'hash'" class="algorithm-panel">
-      <h3>🔍 哈希算法</h3>
-
-      <div class="form-group">
-        <label>算法:</label>
-        <select v-model="hashAlgorithm">
-          <option value="SHA256">SHA-256 (推荐)</option>
-          <option value="SHA512">SHA-512 (推荐)</option>
-          <option value="SHA1">SHA-1 (兼容)</option>
-          <option value="MD5">MD5 (兼容)</option>
-          <option value="SM3">SM3 (国密)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>待哈希数据:</label>
-        <textarea v-model="hashData" placeholder="输入要计算哈希的数据"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>盐值 (可选):</label>
-        <input v-model="hashSalt" placeholder="输入盐值以增强安全性" />
-      </div>
-
-      <div class="button-group">
-        <button @click="calculateHash" :disabled="isLoading" class="btn-primary">
-          {{ isLoading ? '计算中...' : '🔍 计算哈希' }}
-        </button>
-      </div>
-
-      <div v-if="hashResult" class="result-panel">
-        <h4>{{ hashAlgorithm }} 哈希值:</h4>
-        <div class="result-content">{{ hashResult }}</div>
-        <button @click="copyToClipboard(hashResult)" class="btn-copy">📋 复制</button>
-      </div>
-    </div>
-
-    <!-- 错误显示 -->
-    <div v-if="error" class="error-panel">
-      <h4>❌ 错误:</h4>
-      <div class="error-content">{{ error }}</div>
-    </div>
-
-    <!-- 性能统计 -->
-    <div v-if="performanceData" class="performance-panel">
-      <h4>📊 性能统计:</h4>
-      <div class="performance-content">
-        <span>执行时间: {{ performanceData.duration }}ms</span>
-        <span>算法: {{ performanceData.algorithm }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
@@ -193,7 +29,7 @@ const hashResult = ref('')
 const algorithmTabs = [
   { key: 'symmetric', label: '对称加密', icon: '🔒' },
   { key: 'asymmetric', label: '非对称加密', icon: '🔑' },
-  { key: 'hash', label: '哈希算法', icon: '🔍' }
+  { key: 'hash', label: '哈希算法', icon: '🔍' },
 ]
 
 // 动态导入crypto模块
@@ -208,8 +44,9 @@ onMounted(async () => {
       await crypto.init()
       generateSymmetricKey()
     }
-  } catch (err) {
-    error.value = '加密模块初始化失败: ' + err.message
+  }
+ catch (err) {
+    error.value = `加密模块初始化失败: ${err.message}`
   }
 })
 
@@ -228,10 +65,11 @@ function safeBase64Encode(str) {
 
     // 使用btoa编码二进制字符串
     return btoa(binary)
-  } catch (error) {
+  }
+ catch (error) {
     // 降级方案：简单的十六进制编码
     return Array.from(str).map(char =>
-      char.charCodeAt(0).toString(16).padStart(4, '0')
+      char.charCodeAt(0).toString(16).padStart(4, '0'),
     ).join('')
   }
 }
@@ -251,16 +89,18 @@ function safeBase64Decode(encodedStr) {
     // 使用TextDecoder将字节数组转换为UTF-8字符串
     const decoder = new TextDecoder()
     return decoder.decode(bytes)
-  } catch (error) {
+  }
+ catch (error) {
     // 降级方案：十六进制解码
     try {
       const chars = []
       for (let i = 0; i < encodedStr.length; i += 4) {
         const hex = encodedStr.substr(i, 4)
-        chars.push(String.fromCharCode(parseInt(hex, 16)))
+        chars.push(String.fromCharCode(Number.parseInt(hex, 16)))
       }
       return chars.join('')
-    } catch (e) {
+    }
+ catch (e) {
       return encodedStr // 如果都失败了，返回原字符串
     }
   }
@@ -280,27 +120,27 @@ function createMockCrypto() {
         'DES': 16,
         '3DES': 48,
         'SM4': 32,
-        'HMAC': 64
+        'HMAC': 64,
       }
       const length = keyLengths[algorithm] || 64
-      return Array.from({length}, () => Math.floor(Math.random() * 16).toString(16)).join('')
+      return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('')
     },
 
     generateRandom(options) {
       const length = options.length || 32
       if (options.charset === 'hex') {
-        return Array.from({length}, () => Math.floor(Math.random() * 16).toString(16)).join('')
+        return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('')
       }
-      return Array.from({length}, () => String.fromCharCode(Math.floor(Math.random() * 26) + 97)).join('')
+      return Array.from({ length }, () => String.fromCharCode(Math.floor(Math.random() * 26) + 97)).join('')
     },
 
     async aesEncrypt(data, options) {
       // 模拟AES加密
-      const mockEncrypted = safeBase64Encode(data + '-encrypted-' + Date.now())
+      const mockEncrypted = safeBase64Encode(`${data}-encrypted-${Date.now()}`)
       return {
         success: true,
         data: mockEncrypted,
-        iv: this.generateRandom({ length: 32, charset: 'hex' })
+        iv: this.generateRandom({ length: 32, charset: 'hex' }),
       }
     },
 
@@ -311,12 +151,13 @@ function createMockCrypto() {
         const original = decoded.split('-encrypted-')[0]
         return {
           success: true,
-          data: original
+          data: original,
         }
-      } catch {
+      }
+ catch {
         return {
           success: false,
-          error: '解密失败'
+          error: '解密失败',
         }
       }
     },
@@ -324,16 +165,16 @@ function createMockCrypto() {
     async generateRSAKeyPair(keySize) {
       // 模拟RSA密钥对生成
       return {
-        publicKey: `-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA${this.generateRandom({length: 200})}\n-----END PUBLIC KEY-----`,
-        privateKey: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${this.generateRandom({length: 400})}\n-----END PRIVATE KEY-----`
+        publicKey: `-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA${this.generateRandom({ length: 200 })}\n-----END PUBLIC KEY-----`,
+        privateKey: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC${this.generateRandom({ length: 400 })}\n-----END PRIVATE KEY-----`,
       }
     },
 
     async rsaEncrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-rsa-encrypted-' + Date.now())
+      const mockEncrypted = safeBase64Encode(`${data}-rsa-encrypted-${Date.now()}`)
       return {
         success: true,
-        data: mockEncrypted
+        data: mockEncrypted,
       }
     },
 
@@ -343,12 +184,13 @@ function createMockCrypto() {
         const original = decoded.split('-rsa-encrypted-')[0]
         return {
           success: true,
-          data: original
+          data: original,
         }
-      } catch {
+      }
+ catch {
         return {
           success: false,
-          error: 'RSA解密失败'
+          error: 'RSA解密失败',
         }
       }
     },
@@ -365,7 +207,7 @@ function createMockCrypto() {
       const mockHash = Math.abs(hash).toString(16).padStart(64, '0')
       return {
         success: true,
-        data: mockHash
+        data: mockHash,
       }
     },
 
@@ -380,22 +222,22 @@ function createMockCrypto() {
       const mockHash = Math.abs(hash).toString(16).padStart(32, '0')
       return {
         success: true,
-        data: mockHash
+        data: mockHash,
       }
     },
 
     async generateSM2KeyPair() {
       return {
-        publicKey: `04${this.generateRandom({length: 128, charset: 'hex'})}`,
-        privateKey: this.generateRandom({length: 64, charset: 'hex'})
+        publicKey: `04${this.generateRandom({ length: 128, charset: 'hex' })}`,
+        privateKey: this.generateRandom({ length: 64, charset: 'hex' }),
       }
     },
 
     async sm2Encrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-sm2-encrypted-' + Date.now())
+      const mockEncrypted = safeBase64Encode(`${data}-sm2-encrypted-${Date.now()}`)
       return {
         success: true,
-        data: mockEncrypted
+        data: mockEncrypted,
       }
     },
 
@@ -405,12 +247,13 @@ function createMockCrypto() {
         const original = decoded.split('-sm2-encrypted-')[0]
         return {
           success: true,
-          data: original
+          data: original,
         }
-      } catch {
+      }
+ catch {
         return {
           success: false,
-          error: 'SM2解密失败'
+          error: 'SM2解密失败',
         }
       }
     },
@@ -426,15 +269,15 @@ function createMockCrypto() {
       const mockHash = Math.abs(hash).toString(16).padStart(64, '0')
       return {
         success: true,
-        data: mockHash
+        data: mockHash,
       }
     },
 
     async sm4Encrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-sm4-encrypted-' + Date.now())
+      const mockEncrypted = safeBase64Encode(`${data}-sm4-encrypted-${Date.now()}`)
       return {
         success: true,
-        data: mockEncrypted
+        data: mockEncrypted,
       }
     },
 
@@ -444,20 +287,21 @@ function createMockCrypto() {
         const original = decoded.split('-sm4-encrypted-')[0]
         return {
           success: true,
-          data: original
-        }
-      } catch {
-        return {
-          success: false,
-          error: 'SM4解密失败'
+          data: original,
         }
       }
-    }
+ catch {
+        return {
+          success: false,
+          error: 'SM4解密失败',
+        }
+      }
+    },
   }
 }
 
 // 工具方法
-const getKeyPlaceholder = (algorithm) => {
+function getKeyPlaceholder(algorithm) {
   switch (algorithm) {
     case 'AES': return '32字节十六进制密钥 (256位)'
     case 'DES': return '8字节密钥 (64位)'
@@ -466,8 +310,9 @@ const getKeyPlaceholder = (algorithm) => {
   }
 }
 
-const generateSymmetricKey = () => {
-  if (!crypto) return
+function generateSymmetricKey() {
+  if (!crypto)
+return
 
   try {
     switch (symmetricAlgorithm.value) {
@@ -481,13 +326,15 @@ const generateSymmetricKey = () => {
         symmetricKey.value = crypto.generateKey('3DES')
         break
     }
-  } catch (err) {
-    error.value = '密钥生成失败: ' + err.message
+  }
+ catch (err) {
+    error.value = `密钥生成失败: ${err.message}`
   }
 }
 
-const generateAsymmetricKeys = async () => {
-  if (!crypto) return
+async function generateAsymmetricKeys() {
+  if (!crypto)
+return
 
   isLoading.value = true
   error.value = ''
@@ -495,18 +342,22 @@ const generateAsymmetricKeys = async () => {
   try {
     if (asymmetricAlgorithm.value === 'RSA') {
       asymmetricKeys.value = await crypto.generateRSAKeyPair(2048)
-    } else {
+    }
+ else {
       asymmetricKeys.value = await crypto.generateSM2KeyPair()
     }
-  } catch (err) {
-    error.value = '密钥生成失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `密钥生成失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const encryptSymmetric = async () => {
-  if (!crypto) return
+async function encryptSymmetric() {
+  if (!crypto)
+return
 
   isLoading.value = true
   error.value = ''
@@ -531,20 +382,24 @@ const encryptSymmetric = async () => {
       symmetricResult.value = result.data
       performanceData.value = {
         duration: result.duration?.toFixed(2),
-        algorithm: symmetricAlgorithm.value
+        algorithm: symmetricAlgorithm.value,
       }
-    } else {
+    }
+ else {
       error.value = result.error
     }
-  } catch (err) {
-    error.value = '加密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `加密失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const decryptSymmetric = async () => {
-  if (!crypto || !symmetricResult.value) return
+async function decryptSymmetric() {
+  if (!crypto || !symmetricResult.value)
+return
 
   isLoading.value = true
   error.value = ''
@@ -569,20 +424,24 @@ const decryptSymmetric = async () => {
       symmetricResult.value = result.data
       performanceData.value = {
         duration: result.duration?.toFixed(2),
-        algorithm: symmetricAlgorithm.value
+        algorithm: symmetricAlgorithm.value,
       }
-    } else {
+    }
+ else {
       error.value = result.error
     }
-  } catch (err) {
-    error.value = '解密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `解密失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const encryptAsymmetric = async () => {
-  if (!crypto || !asymmetricKeys.value) return
+async function encryptAsymmetric() {
+  if (!crypto || !asymmetricKeys.value)
+return
 
   isLoading.value = true
   error.value = ''
@@ -592,11 +451,12 @@ const encryptAsymmetric = async () => {
 
     if (asymmetricAlgorithm.value === 'RSA') {
       result = await crypto.rsaEncrypt(asymmetricData.value, {
-        publicKey: asymmetricKeys.value.publicKey
+        publicKey: asymmetricKeys.value.publicKey,
       })
-    } else {
+    }
+ else {
       result = await crypto.sm2Encrypt(asymmetricData.value, {
-        publicKey: asymmetricKeys.value.publicKey
+        publicKey: asymmetricKeys.value.publicKey,
       })
     }
 
@@ -604,20 +464,24 @@ const encryptAsymmetric = async () => {
       asymmetricResult.value = result.data
       performanceData.value = {
         duration: result.duration?.toFixed(2),
-        algorithm: asymmetricAlgorithm.value
+        algorithm: asymmetricAlgorithm.value,
       }
-    } else {
+    }
+ else {
       error.value = result.error
     }
-  } catch (err) {
-    error.value = '加密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `加密失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const decryptAsymmetric = async () => {
-  if (!crypto || !asymmetricKeys.value || !asymmetricResult.value) return
+async function decryptAsymmetric() {
+  if (!crypto || !asymmetricKeys.value || !asymmetricResult.value)
+return
 
   isLoading.value = true
   error.value = ''
@@ -627,11 +491,12 @@ const decryptAsymmetric = async () => {
 
     if (asymmetricAlgorithm.value === 'RSA') {
       result = await crypto.rsaDecrypt(asymmetricResult.value, {
-        privateKey: asymmetricKeys.value.privateKey
+        privateKey: asymmetricKeys.value.privateKey,
       })
-    } else {
+    }
+ else {
       result = await crypto.sm2Decrypt(asymmetricResult.value, {
-        privateKey: asymmetricKeys.value.privateKey
+        privateKey: asymmetricKeys.value.privateKey,
       })
     }
 
@@ -639,20 +504,24 @@ const decryptAsymmetric = async () => {
       asymmetricResult.value = result.data
       performanceData.value = {
         duration: result.duration?.toFixed(2),
-        algorithm: asymmetricAlgorithm.value
+        algorithm: asymmetricAlgorithm.value,
       }
-    } else {
+    }
+ else {
       error.value = result.error
     }
-  } catch (err) {
-    error.value = '解密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `解密失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const calculateHash = async () => {
-  if (!crypto) return
+async function calculateHash() {
+  if (!crypto)
+return
 
   isLoading.value = true
   error.value = ''
@@ -683,27 +552,231 @@ const calculateHash = async () => {
       hashResult.value = result.data
       performanceData.value = {
         duration: result.duration?.toFixed(2),
-        algorithm: hashAlgorithm.value
+        algorithm: hashAlgorithm.value,
       }
-    } else {
+    }
+ else {
       error.value = result.error
     }
-  } catch (err) {
-    error.value = '哈希计算失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `哈希计算失败: ${err.message}`
+  }
+ finally {
     isLoading.value = false
   }
 }
 
-const copyToClipboard = async (text) => {
+async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text)
     // 可以添加一个临时的成功提示
-  } catch (err) {
+  }
+ catch (err) {
     console.error('复制失败:', err)
   }
 }
 </script>
+
+<template>
+  <div class="crypto-playground">
+    <!-- 算法选择 -->
+    <div class="algorithm-selector">
+      <h3>🔧 选择算法类型</h3>
+      <div class="algorithm-tabs">
+        <button
+          v-for="tab in algorithmTabs"
+          :key="tab.key"
+          class="tab-btn" :class="[{ active: activeTab === tab.key }]"
+          @click="activeTab = tab.key"
+        >
+          {{ tab.icon }} {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- 对称加密 -->
+    <div v-if="activeTab === 'symmetric'" class="algorithm-panel">
+      <h3>🔒 对称加密</h3>
+
+      <div class="form-group">
+        <label>算法:</label>
+        <select v-model="symmetricAlgorithm">
+          <option value="AES">
+            AES (推荐)
+          </option>
+          <option value="DES">
+            DES (兼容)
+          </option>
+          <option value="3DES">
+            3DES (兼容)
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>待加密数据:</label>
+        <textarea v-model="symmetricData" placeholder="输入要加密的数据" />
+      </div>
+
+      <div class="form-group">
+        <label>密钥:</label>
+        <div class="key-input">
+          <input v-model="symmetricKey" :placeholder="getKeyPlaceholder(symmetricAlgorithm)">
+          <button class="btn-generate" @click="generateSymmetricKey">
+            生成
+          </button>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button :disabled="isLoading" class="btn-primary" @click="encryptSymmetric">
+          {{ isLoading ? '加密中...' : '🔒 加密' }}
+        </button>
+        <button :disabled="isLoading" class="btn-secondary" @click="decryptSymmetric">
+          {{ isLoading ? '解密中...' : '🔓 解密' }}
+        </button>
+      </div>
+
+      <div v-if="symmetricResult" class="result-panel">
+        <h4>结果:</h4>
+        <div class="result-content">
+          {{ symmetricResult }}
+        </div>
+        <button class="btn-copy" @click="copyToClipboard(symmetricResult)">
+          📋 复制
+        </button>
+      </div>
+    </div>
+
+    <!-- 非对称加密 -->
+    <div v-if="activeTab === 'asymmetric'" class="algorithm-panel">
+      <h3>🔑 非对称加密</h3>
+
+      <div class="form-group">
+        <label>算法:</label>
+        <select v-model="asymmetricAlgorithm">
+          <option value="RSA">
+            RSA
+          </option>
+          <option value="SM2">
+            SM2 (国密)
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <button :disabled="isLoading" class="btn-generate" @click="generateAsymmetricKeys">
+          {{ isLoading ? '生成中...' : '🔑 生成密钥对' }}
+        </button>
+      </div>
+
+      <div v-if="asymmetricKeys" class="key-display">
+        <div class="key-item">
+          <label>公钥:</label>
+          <textarea :value="asymmetricKeys.publicKey" readonly />
+        </div>
+        <div class="key-item">
+          <label>私钥:</label>
+          <textarea :value="asymmetricKeys.privateKey" readonly />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>待加密数据:</label>
+        <textarea v-model="asymmetricData" placeholder="输入要加密的数据" />
+      </div>
+
+      <div class="button-group">
+        <button :disabled="isLoading || !asymmetricKeys" class="btn-primary" @click="encryptAsymmetric">
+          {{ isLoading ? '加密中...' : '🔒 公钥加密' }}
+        </button>
+        <button :disabled="isLoading || !asymmetricKeys" class="btn-secondary" @click="decryptAsymmetric">
+          {{ isLoading ? '解密中...' : '🔓 私钥解密' }}
+        </button>
+      </div>
+
+      <div v-if="asymmetricResult" class="result-panel">
+        <h4>结果:</h4>
+        <div class="result-content">
+          {{ asymmetricResult }}
+        </div>
+        <button class="btn-copy" @click="copyToClipboard(asymmetricResult)">
+          📋 复制
+        </button>
+      </div>
+    </div>
+
+    <!-- 哈希算法 -->
+    <div v-if="activeTab === 'hash'" class="algorithm-panel">
+      <h3>🔍 哈希算法</h3>
+
+      <div class="form-group">
+        <label>算法:</label>
+        <select v-model="hashAlgorithm">
+          <option value="SHA256">
+            SHA-256 (推荐)
+          </option>
+          <option value="SHA512">
+            SHA-512 (推荐)
+          </option>
+          <option value="SHA1">
+            SHA-1 (兼容)
+          </option>
+          <option value="MD5">
+            MD5 (兼容)
+          </option>
+          <option value="SM3">
+            SM3 (国密)
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>待哈希数据:</label>
+        <textarea v-model="hashData" placeholder="输入要计算哈希的数据" />
+      </div>
+
+      <div class="form-group">
+        <label>盐值 (可选):</label>
+        <input v-model="hashSalt" placeholder="输入盐值以增强安全性">
+      </div>
+
+      <div class="button-group">
+        <button :disabled="isLoading" class="btn-primary" @click="calculateHash">
+          {{ isLoading ? '计算中...' : '🔍 计算哈希' }}
+        </button>
+      </div>
+
+      <div v-if="hashResult" class="result-panel">
+        <h4>{{ hashAlgorithm }} 哈希值:</h4>
+        <div class="result-content">
+          {{ hashResult }}
+        </div>
+        <button class="btn-copy" @click="copyToClipboard(hashResult)">
+          📋 复制
+        </button>
+      </div>
+    </div>
+
+    <!-- 错误显示 -->
+    <div v-if="error" class="error-panel">
+      <h4>❌ 错误:</h4>
+      <div class="error-content">
+        {{ error }}
+      </div>
+    </div>
+
+    <!-- 性能统计 -->
+    <div v-if="performanceData" class="performance-panel">
+      <h4>📊 性能统计:</h4>
+      <div class="performance-content">
+        <span>执行时间: {{ performanceData.duration }}ms</span>
+        <span>算法: {{ performanceData.algorithm }}</span>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .crypto-playground {

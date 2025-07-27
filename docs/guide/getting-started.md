@@ -29,9 +29,9 @@ import { createCrypto } from '@ldesign/crypto'
 
 // 创建加密实例
 const crypto = createCrypto({
-  debug: true,                    // 启用调试模式
+  debug: true, // 启用调试模式
   performance: { enabled: true }, // 启用性能监控
-  cache: { enabled: true }        // 启用缓存
+  cache: { enabled: true } // 启用缓存
 })
 
 // 初始化
@@ -49,7 +49,7 @@ const result = await crypto.aesEncrypt('Hello World', {
 })
 
 console.log('加密结果:', result.data)
-console.log('执行时间:', result.duration + 'ms')
+console.log('执行时间:', `${result.duration}ms`)
 
 // AES-256 解密
 const decrypted = await crypto.aesDecrypt(result.data!, {
@@ -139,8 +139,8 @@ const sm4Decrypted = await crypto.sm4Decrypt(sm4Encrypted.data!, {
 ```typescript
 // main.ts
 import { createApp } from 'vue'
-import LDesignCrypto from '@ldesign/crypto'
 import App from './App.vue'
+import LDesignCrypto from '@ldesign/crypto'
 
 const app = createApp(App)
 
@@ -156,17 +156,6 @@ app.mount('#app')
 ### 2. 使用组合式API
 
 ```vue
-<template>
-  <div>
-    <input v-model="data" placeholder="输入要加密的数据" />
-    <button @click="handleEncrypt" :disabled="isLoading">
-      {{ isLoading ? '加密中...' : '加密' }}
-    </button>
-    <div v-if="result">加密结果: {{ result }}</div>
-    <div v-if="error" class="error">{{ error }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSymmetricCrypto } from '@ldesign/crypto'
@@ -175,13 +164,28 @@ const { isLoading, error, result, encrypt } = useSymmetricCrypto()
 
 const data = ref('Hello World')
 
-const handleEncrypt = () => {
+function handleEncrypt() {
   encrypt(data.value, {
     key: '12345678901234567890123456789012',
     mode: 'CBC'
   }, 'AES')
 }
 </script>
+
+<template>
+  <div>
+    <input v-model="data" placeholder="输入要加密的数据">
+    <button :disabled="isLoading" @click="handleEncrypt">
+      {{ isLoading ? '加密中...' : '加密' }}
+    </button>
+    <div v-if="result">
+      加密结果: {{ result }}
+    </div>
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 工具方法
@@ -213,7 +217,8 @@ import { CryptoError, CryptoErrorType } from '@ldesign/crypto'
 
 try {
   const result = await crypto.aesEncrypt(data, config)
-} catch (error) {
+}
+ catch (error) {
   if (error instanceof CryptoError) {
     switch (error.type) {
       case CryptoErrorType.INVALID_KEY:
@@ -235,21 +240,21 @@ try {
 const crypto = createCrypto({
   // 默认编码格式
   defaultEncoding: 'hex',
-  
+
   // 性能监控
   performance: {
-    enabled: true,        // 启用性能监控
-    detailed: true,       // 详细监控信息
-    threshold: 100        // 性能阈值(ms)
+    enabled: true, // 启用性能监控
+    detailed: true, // 详细监控信息
+    threshold: 100 // 性能阈值(ms)
   },
-  
+
   // 缓存配置
   cache: {
-    enabled: true,        // 启用缓存
-    maxSize: 1000,        // 最大缓存条目数
-    ttl: 300000          // 缓存过期时间(ms)
+    enabled: true, // 启用缓存
+    maxSize: 1000, // 最大缓存条目数
+    ttl: 300000 // 缓存过期时间(ms)
   },
-  
+
   // 调试模式
   debug: true
 })

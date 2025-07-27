@@ -137,7 +137,8 @@ import { CryptoError, ErrorCodes } from '@ldesign/crypto'
 
 try {
   await crypto.encrypt(data, options)
-} catch (error) {
+}
+ catch (error) {
   if (error instanceof CryptoError) {
     console.log('错误代码:', error.code)
     console.log('错误详情:', error.details)

@@ -4,14 +4,14 @@
  */
 
 // 核心类型
+// 导入用于默认导出
+import { CryptoAPI } from './core/CryptoAPI'
+
 export * from './types'
 
 // 核心API
 export { CryptoAPI } from './core/CryptoAPI'
 export { CryptoManager } from './core/CryptoManager'
-
-// 导入用于默认导出
-import { CryptoAPI } from './core/CryptoAPI'
 
 // 算法实现
 export { AsymmetricPlugin, ECCCrypto, KeyUtils, RSACrypto } from './algorithms/asymmetric'
@@ -34,7 +34,7 @@ const LDesignCrypto = {
   install: (app: any, config = {}) => {
     const { install } = require('./vue')
     return install(app, config)
-  }
+  },
 }
 
 export default LDesignCrypto

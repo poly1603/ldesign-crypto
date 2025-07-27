@@ -13,11 +13,11 @@ export type EncodingFormat = 'hex' | 'base64' | 'utf8' | 'binary'
 /**
  * 加密算法类型
  */
-export type CryptoAlgorithm = 
-  | 'AES' | 'DES' | '3DES' | 'RC4'  // 对称加密
-  | 'RSA' | 'ECC'                   // 非对称加密
-  | 'SM2' | 'SM4'                   // 国密算法
-  | 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' | 'SM3'  // 哈希算法
+export type CryptoAlgorithm =
+  | 'AES' | 'DES' | '3DES' | 'RC4' // 对称加密
+  | 'RSA' | 'ECC' // 非对称加密
+  | 'SM2' | 'SM4' // 国密算法
+  | 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' | 'SM3' // 哈希算法
 
 /**
  * AES加密模式
@@ -208,7 +208,7 @@ export enum CryptoErrorType {
   KEY_GENERATION_FAILED = 'KEY_GENERATION_FAILED',
   SIGNATURE_FAILED = 'SIGNATURE_FAILED',
   VERIFICATION_FAILED = 'VERIFICATION_FAILED',
-  UNSUPPORTED_OPERATION = 'UNSUPPORTED_OPERATION'
+  UNSUPPORTED_OPERATION = 'UNSUPPORTED_OPERATION',
 }
 
 /**
@@ -223,7 +223,7 @@ export class CryptoError extends Error {
     type: CryptoErrorType,
     message: string,
     algorithm?: CryptoAlgorithm,
-    details?: any
+    details?: any,
   ) {
     super(message)
     this.name = 'CryptoError'
@@ -244,9 +244,9 @@ export interface CryptoPlugin {
   /** 支持的算法 */
   algorithms: CryptoAlgorithm[]
   /** 初始化插件 */
-  init?(): Promise<void> | void
+  init?: () => Promise<void> | void
   /** 销毁插件 */
-  destroy?(): Promise<void> | void
+  destroy?: () => Promise<void> | void
 }
 
 /**

@@ -20,8 +20,8 @@ generateRSAKeyPair(keySize: number): Promise<KeyPair>
 
 ```typescript
 interface KeyPair {
-  publicKey: string    // PEM 格式的公钥
-  privateKey: string   // PEM 格式的私钥
+  publicKey: string // PEM 格式的公钥
+  privateKey: string // PEM 格式的私钥
 }
 ```
 
@@ -49,9 +49,9 @@ rsaEncrypt(data: string | ArrayBuffer, options: RSAEncryptOptions): Promise<Cryp
 
 ```typescript
 interface RSAEncryptOptions {
-  publicKey: string                    // PEM 格式的公钥
-  padding?: 'PKCS1' | 'OAEP'          // 填充方式，默认 'OAEP'
-  hashAlgorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'  // OAEP 哈希算法
+  publicKey: string // PEM 格式的公钥
+  padding?: 'PKCS1' | 'OAEP' // 填充方式，默认 'OAEP'
+  hashAlgorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512' // OAEP 哈希算法
 }
 ```
 
@@ -83,7 +83,7 @@ rsaDecrypt(encryptedData: string, options: RSADecryptOptions): Promise<CryptoRes
 
 ```typescript
 interface RSADecryptOptions {
-  privateKey: string                   // PEM 格式的私钥
+  privateKey: string // PEM 格式的私钥
   padding?: 'PKCS1' | 'OAEP'
   hashAlgorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'
 }
@@ -114,9 +114,9 @@ rsaSign(data: string | ArrayBuffer, options: RSASignOptions): Promise<SignatureR
 
 ```typescript
 interface RSASignOptions {
-  privateKey: string                   // PEM 格式的私钥
-  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'  // 哈希算法，默认 'SHA-256'
-  saltLength?: number                  // PSS 填充的盐长度
+  privateKey: string // PEM 格式的私钥
+  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512' // 哈希算法，默认 'SHA-256'
+  saltLength?: number // PSS 填充的盐长度
 }
 ```
 
@@ -124,8 +124,8 @@ interface RSASignOptions {
 
 ```typescript
 interface SignatureResult {
-  signature: string    // Base64 编码的签名
-  algorithm: string    // 使用的算法
+  signature: string // Base64 编码的签名
+  algorithm: string // 使用的算法
 }
 ```
 
@@ -155,7 +155,7 @@ rsaVerify(data: string | ArrayBuffer, signature: string, options: RSAVerifyOptio
 
 ```typescript
 interface RSAVerifyOptions {
-  publicKey: string                    // PEM 格式的公钥
+  publicKey: string // PEM 格式的公钥
   algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'
   saltLength?: number
 }
@@ -165,8 +165,8 @@ interface RSAVerifyOptions {
 
 ```typescript
 interface VerifyResult {
-  valid: boolean       // 签名是否有效
-  algorithm: string    // 使用的算法
+  valid: boolean // 签名是否有效
+  algorithm: string // 使用的算法
 }
 ```
 
@@ -221,8 +221,8 @@ eccEncrypt(data: string | ArrayBuffer, options: ECCEncryptOptions): Promise<Cryp
 
 ```typescript
 interface ECCEncryptOptions {
-  publicKey: string    // PEM 格式的公钥
-  curve?: string       // 椭圆曲线名称
+  publicKey: string // PEM 格式的公钥
+  curve?: string // 椭圆曲线名称
 }
 ```
 
@@ -257,9 +257,9 @@ ecdsaSign(data: string | ArrayBuffer, options: ECDSASignOptions): Promise<Signat
 
 ```typescript
 interface ECDSASignOptions {
-  privateKey: string                   // PEM 格式的私钥
+  privateKey: string // PEM 格式的私钥
   algorithm?: 'SHA-256' | 'SHA-384' | 'SHA-512'
-  curve?: string                       // 椭圆曲线名称
+  curve?: string // 椭圆曲线名称
 }
 ```
 
@@ -389,10 +389,10 @@ hybridEncrypt(data: string | ArrayBuffer, publicKey: string): Promise<HybridResu
 
 ```typescript
 interface HybridResult {
-  encryptedData: string    // AES 加密的数据
-  encryptedKey: string     // RSA 加密的 AES 密钥
-  iv: string              // AES 初始向量
-  tag?: string            // GCM 认证标签
+  encryptedData: string // AES 加密的数据
+  encryptedKey: string // RSA 加密的 AES 密钥
+  iv: string // AES 初始向量
+  tag?: string // GCM 认证标签
 }
 ```
 
@@ -405,7 +405,7 @@ const largeData = 'Very large amount of data...'.repeat(1000)
 // 混合加密
 const hybridResult = await crypto.hybridEncrypt(largeData, keyPair.publicKey)
 
-console.log('加密数据:', hybridResult.encryptedData.substring(0, 100) + '...')
+console.log('加密数据:', `${hybridResult.encryptedData.substring(0, 100)}...`)
 console.log('加密密钥:', hybridResult.encryptedKey)
 ```
 
@@ -440,19 +440,19 @@ generateSelfSignedCertificate(options: CertificateOptions): Promise<string>
 
 ```typescript
 interface CertificateOptions {
-  keyPair: KeyPair                     // 密钥对
+  keyPair: KeyPair // 密钥对
   subject: {
-    commonName: string                 // 通用名称
-    organization?: string              // 组织
-    country?: string                   // 国家
-    state?: string                     // 州/省
-    locality?: string                  // 城市
+    commonName: string // 通用名称
+    organization?: string // 组织
+    country?: string // 国家
+    state?: string // 州/省
+    locality?: string // 城市
   }
-  validityDays: number                 // 有效期（天）
+  validityDays: number // 有效期（天）
   extensions?: {
-    keyUsage?: string[]                // 密钥用途
-    extKeyUsage?: string[]             // 扩展密钥用途
-    subjectAltName?: string[]          // 主题备用名称
+    keyUsage?: string[] // 密钥用途
+    extKeyUsage?: string[] // 扩展密钥用途
+    subjectAltName?: string[] // 主题备用名称
   }
 }
 ```
@@ -494,18 +494,18 @@ verifyCertificate(certificate: string, options?: VerifyCertificateOptions): Prom
 
 ```typescript
 interface VerifyCertificateOptions {
-  checkExpiry?: boolean                // 检查过期时间
-  checkSignature?: boolean             // 检查签名
-  trustedCAs?: string[]               // 受信任的 CA 证书
+  checkExpiry?: boolean // 检查过期时间
+  checkSignature?: boolean // 检查签名
+  trustedCAs?: string[] // 受信任的 CA 证书
 }
 
 interface CertificateVerifyResult {
-  valid: boolean                       // 证书是否有效
-  errors: string[]                     // 验证错误
-  subject: any                         // 证书主题
-  issuer: any                          // 证书颁发者
-  validFrom: Date                      // 有效期开始
-  validTo: Date                        // 有效期结束
+  valid: boolean // 证书是否有效
+  errors: string[] // 验证错误
+  subject: any // 证书主题
+  issuer: any // 证书颁发者
+  validFrom: Date // 有效期开始
+  validTo: Date // 有效期结束
 }
 ```
 
@@ -516,16 +516,15 @@ interface CertificateVerifyResult {
 ```typescript
 // 批量生成密钥对
 async function generateMultipleKeyPairs(count: number) {
-  const promises = Array.from({ length: count }, () => 
-    crypto.generateRSAKeyPair(2048)
-  )
+  const promises = Array.from({ length: count }, () =>
+    crypto.generateRSAKeyPair(2048))
   return Promise.all(promises)
 }
 
 // 批量签名
 async function batchSign(messages: string[], privateKey: string) {
   return Promise.all(
-    messages.map(message => 
+    messages.map(message =>
       crypto.rsaSign(message, { privateKey, algorithm: 'SHA-256' })
     )
   )
@@ -537,29 +536,30 @@ async function batchSign(messages: string[], privateKey: string) {
 ```typescript
 class AsymmetricKeyManager {
   private keyPairs = new Map<string, KeyPair>()
-  
+
   async getOrCreateKeyPair(name: string, algorithm: 'RSA' | 'ECC', keySize: number | string) {
     const cacheKey = `${name}-${algorithm}-${keySize}`
-    
+
     if (!this.keyPairs.has(cacheKey)) {
       let keyPair: KeyPair
-      
+
       if (algorithm === 'RSA') {
         keyPair = await crypto.generateRSAKeyPair(keySize as number)
-      } else {
+      }
+ else {
         keyPair = await crypto.generateECCKeyPair(keySize as string)
       }
-      
+
       this.keyPairs.set(cacheKey, keyPair)
     }
-    
+
     return this.keyPairs.get(cacheKey)!
   }
-  
+
   removeKeyPair(name: string) {
     const keysToRemove = Array.from(this.keyPairs.keys())
-      .filter(key => key.startsWith(name + '-'))
-    
+      .filter(key => key.startsWith(`${name}-`))
+
     keysToRemove.forEach(key => this.keyPairs.delete(key))
   }
 }
@@ -587,10 +587,10 @@ const encrypted = await crypto.rsaEncrypt(data, {
 })
 
 // ❌ 错误：使用弱密钥和不安全填充
-const weakKeyPair = await crypto.generateRSAKeyPair(1024)  // 不安全
+const weakKeyPair = await crypto.generateRSAKeyPair(1024) // 不安全
 const weakEncrypted = await crypto.rsaEncrypt(data, {
   publicKey: weakKeyPair.publicKey,
-  padding: 'PKCS1'  // 不推荐
+  padding: 'PKCS1' // 不推荐
 })
 ```
 

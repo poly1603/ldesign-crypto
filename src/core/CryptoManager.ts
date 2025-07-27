@@ -9,7 +9,7 @@ import type {
   CryptoManagerConfig,
   CryptoPlugin,
   CryptoResult,
-  PerformanceConfig
+  PerformanceConfig,
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
 
@@ -30,7 +30,8 @@ class PerformanceMonitor {
   }
 
   recordMetric(operation: string, duration: number): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+return
 
     if (!this.metrics.has(operation)) {
       this.metrics.set(operation, [])
@@ -57,7 +58,7 @@ class PerformanceMonitor {
         count: metrics.length,
         average: metrics.length > 0 ? metrics.reduce((a, b) => a + b, 0) / metrics.length : 0,
         min: metrics.length > 0 ? Math.min(...metrics) : 0,
-        max: metrics.length > 0 ? Math.max(...metrics) : 0
+        max: metrics.length > 0 ? Math.max(...metrics) : 0,
       }
     }
 
@@ -67,7 +68,7 @@ class PerformanceMonitor {
         count: metrics.length,
         average: metrics.length > 0 ? metrics.reduce((a, b) => a + b, 0) / metrics.length : 0,
         min: metrics.length > 0 ? Math.min(...metrics) : 0,
-        max: metrics.length > 0 ? Math.max(...metrics) : 0
+        max: metrics.length > 0 ? Math.max(...metrics) : 0,
       }
     }
     return result
@@ -79,7 +80,7 @@ class PerformanceMonitor {
  */
 class CacheManager {
   private config: CacheConfig
-  private cache: Map<string, { data: any; timestamp: number }> = new Map()
+  private cache: Map<string, { data: any, timestamp: number }> = new Map()
 
   constructor(config: CacheConfig) {
     this.config = config
@@ -90,12 +91,14 @@ class CacheManager {
   }
 
   get(operation: string, params: any): any | null {
-    if (!this.config.enabled) return null
+    if (!this.config.enabled)
+return null
 
     const key = this.generateKey(operation, params)
     const cached = this.cache.get(key)
 
-    if (!cached) return null
+    if (!cached)
+return null
 
     // 检查是否过期
     if (this.config.ttl && Date.now() - cached.timestamp > this.config.ttl) {
@@ -107,7 +110,8 @@ class CacheManager {
   }
 
   set(operation: string, params: any, data: any): void {
-    if (!this.config.enabled) return
+    if (!this.config.enabled)
+return
 
     const key = this.generateKey(operation, params)
 
@@ -122,7 +126,7 @@ class CacheManager {
 
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -152,7 +156,7 @@ export class CryptoManager {
       performance: { enabled: false },
       cache: { enabled: false },
       debug: false,
-      ...config
+      ...config,
     }
 
     this.performanceMonitor = new PerformanceMonitor(this.config.performance!)
@@ -163,7 +167,8 @@ export class CryptoManager {
    * 初始化管理器
    */
   async init(): Promise<void> {
-    if (this.initialized) return
+    if (this.initialized)
+return
 
     try {
       // 初始化插件
@@ -175,12 +180,13 @@ export class CryptoManager {
 
       this.initialized = true
       this.debug('CryptoManager initialized successfully')
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.UNSUPPORTED_OPERATION,
         `Failed to initialize CryptoManager: ${error}`,
         undefined,
-        error
+        error,
       )
     }
   }
@@ -204,12 +210,13 @@ export class CryptoManager {
       }
 
       this.debug(`Plugin ${plugin.name} registered successfully`)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.UNSUPPORTED_OPERATION,
         `Failed to register plugin ${plugin.name}: ${error}`,
         undefined,
-        error
+        error,
       )
     }
   }
@@ -219,7 +226,8 @@ export class CryptoManager {
    */
   async unregisterPlugin(pluginName: string): Promise<void> {
     const plugin = this.plugins.get(pluginName)
-    if (!plugin) return
+    if (!plugin)
+return
 
     try {
       // 移除算法映射
@@ -236,12 +244,13 @@ export class CryptoManager {
       this.plugins.delete(pluginName)
 
       this.debug(`Plugin ${pluginName} unregistered successfully`)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.UNSUPPORTED_OPERATION,
         `Failed to unregister plugin ${pluginName}: ${error}`,
         undefined,
-        error
+        error,
       )
     }
   }
@@ -263,10 +272,10 @@ export class CryptoManager {
   /**
    * 获取插件信息
    */
-  getPluginInfo(): Array<{ name: string; algorithms: CryptoAlgorithm[] }> {
+  getPluginInfo(): Array<{ name: string, algorithms: CryptoAlgorithm[] }> {
     return Array.from(this.plugins.values()).map(plugin => ({
       name: plugin.name,
-      algorithms: plugin.algorithms
+      algorithms: plugin.algorithms,
     }))
   }
 
@@ -277,7 +286,7 @@ export class CryptoManager {
     operation: string,
     algorithm: CryptoAlgorithm,
     executor: () => Promise<T> | T,
-    params?: any
+    params?: any,
   ): Promise<CryptoResult> {
     const timer = this.performanceMonitor.startTimer()
 
@@ -291,7 +300,7 @@ export class CryptoManager {
             success: true,
             data: cached,
             algorithm,
-            duration: timer()
+            duration: timer(),
           }
         }
       }
@@ -312,9 +321,10 @@ export class CryptoManager {
         success: true,
         data: result as string,
         algorithm,
-        duration
+        duration,
       }
-    } catch (error) {
+    }
+ catch (error) {
       const duration = timer()
       this.performanceMonitor.recordMetric(`${operation}_error`, duration)
 
@@ -322,7 +332,7 @@ export class CryptoManager {
         success: false,
         error: error instanceof Error ? error.message : String(error),
         algorithm,
-        duration
+        duration,
       }
     }
   }
@@ -344,10 +354,10 @@ export class CryptoManager {
   /**
    * 获取缓存信息
    */
-  getCacheInfo(): { size: number; enabled: boolean } {
+  getCacheInfo(): { size: number, enabled: boolean } {
     return {
       size: this.cacheManager.size(),
-      enabled: this.config.cache!.enabled
+      enabled: this.config.cache!.enabled,
     }
   }
 
@@ -369,7 +379,7 @@ export class CryptoManager {
       throw new CryptoError(
         CryptoErrorType.UNSUPPORTED_OPERATION,
         `Algorithm ${algorithm} is not supported`,
-        algorithm
+        algorithm,
       )
     }
     return plugin

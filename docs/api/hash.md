@@ -380,10 +380,10 @@ interface FileHashResult {
 
 ```typescript
 interface HashStream {
-  update(data: string | ArrayBuffer | Uint8Array): void
-  digest(): Promise<string>
-  reset(): void
-  getState(): HashStreamState
+  update: (data: string | ArrayBuffer | Uint8Array) => void
+  digest: () => Promise<string>
+  reset: () => void
+  getState: () => HashStreamState
 }
 ```
 
@@ -396,45 +396,45 @@ import { useHash } from '@ldesign/crypto'
 
 class PasswordManager {
   private { pbkdf2, sha256 } = useHash()
-  
+
   async hashPassword(password: string): Promise<string> {
     // 生成随机盐
     const salt = crypto.getRandomValues(new Uint8Array(16))
-    
+
     // 使用 PBKDF2 哈希密码
     const hash = await this.pbkdf2(password, salt, {
       iterations: 100000,
       keyLength: 32,
       hash: 'SHA-256'
     })
-    
+
     // 组合盐和哈希
     const combined = new Uint8Array(salt.length + hash.byteLength)
     combined.set(salt)
     combined.set(new Uint8Array(hash), salt.length)
-    
+
     // 返回 base64 编码
     return btoa(String.fromCharCode(...combined))
   }
-  
+
   async verifyPassword(password: string, storedHash: string): Promise<boolean> {
     try {
       // 解码存储的哈希
       const combined = new Uint8Array(
         atob(storedHash).split('').map(c => c.charCodeAt(0))
       )
-      
+
       // 提取盐和哈希
       const salt = combined.slice(0, 16)
       const hash = combined.slice(16)
-      
+
       // 重新计算哈希
       const computedHash = await this.pbkdf2(password, salt, {
         iterations: 100000,
         keyLength: 32,
         hash: 'SHA-256'
       })
-      
+
       // 比较哈希值
       const computedArray = new Uint8Array(computedHash)
       return computedArray.every((byte, index) => byte === hash[index])
@@ -450,10 +450,10 @@ class PasswordManager {
 ```typescript
 class FileIntegrityChecker {
   private { hashFile, verifyHash } = useHash()
-  
+
   async generateChecksum(file: File): Promise<FileChecksum> {
     const result = await this.hashFile(file, 'SHA-256')
-    
+
     return {
       filename: file.name,
       size: file.size,
@@ -462,22 +462,22 @@ class FileIntegrityChecker {
       timestamp: new Date().toISOString()
     }
   }
-  
+
   async verifyFileIntegrity(file: File, expectedChecksum: FileChecksum): Promise<boolean> {
     if (file.size !== expectedChecksum.size) {
       return false
     }
-    
+
     const result = await this.hashFile(file, expectedChecksum.algorithm)
     return result.hash === expectedChecksum.hash
   }
-  
+
   async batchVerify(files: File[], checksums: FileChecksum[]): Promise<VerificationResult[]> {
     const results: VerificationResult[] = []
-    
+
     for (const file of files) {
       const checksum = checksums.find(c => c.filename === file.name)
-      
+
       if (!checksum) {
         results.push({
           filename: file.name,
@@ -486,7 +486,7 @@ class FileIntegrityChecker {
         })
         continue
       }
-      
+
       const isValid = await this.verifyFileIntegrity(file, checksum)
       results.push({
         filename: file.name,
@@ -494,7 +494,7 @@ class FileIntegrityChecker {
         valid: isValid
       })
     }
-    
+
     return results
   }
 }

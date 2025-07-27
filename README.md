@@ -78,8 +78,8 @@ console.log('解密结果:', decryptResult.data)
 ```typescript
 // main.ts
 import { createApp } from 'vue'
-import LDesignCrypto from '@ldesign/crypto'
 import App from './App.vue'
+import LDesignCrypto from '@ldesign/crypto'
 
 const app = createApp(App)
 
@@ -94,17 +94,6 @@ app.mount('#app')
 
 ```vue
 <!-- 组件中使用 -->
-<template>
-  <div>
-    <input v-model="data" placeholder="输入要加密的数据" />
-    <button @click="encrypt" :disabled="isLoading">
-      {{ isLoading ? '加密中...' : '加密' }}
-    </button>
-    <div v-if="result">加密结果: {{ result }}</div>
-    <div v-if="error" class="error">{{ error }}</div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useSymmetricCrypto } from '@ldesign/crypto'
@@ -113,13 +102,28 @@ const { isLoading, error, result, encrypt } = useSymmetricCrypto()
 
 const data = ref('Hello World')
 
-const handleEncrypt = () => {
+function handleEncrypt() {
   encrypt(data.value, {
     key: '12345678901234567890123456789012',
     mode: 'CBC'
   })
 }
 </script>
+
+<template>
+  <div>
+    <input v-model="data" placeholder="输入要加密的数据">
+    <button :disabled="isLoading" @click="encrypt">
+      {{ isLoading ? '加密中...' : '加密' }}
+    </button>
+    <div v-if="result">
+      加密结果: {{ result }}
+    </div>
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
+  </div>
+</template>
 ```
 
 ## 📚 主要API
@@ -205,11 +209,11 @@ crypto.clearCache()
 import { useSymmetricCrypto } from '@ldesign/crypto'
 
 const {
-  isLoading,    // 加载状态
-  error,        // 错误信息
-  result,       // 操作结果
-  encrypt,      // 加密方法
-  decrypt       // 解密方法
+  isLoading, // 加载状态
+  error, // 错误信息
+  result, // 操作结果
+  encrypt, // 加密方法
+  decrypt // 解密方法
 } = useSymmetricCrypto()
 
 // 使用示例
@@ -225,12 +229,12 @@ const {
   isLoading,
   error,
   result,
-  keyPair,           // 生成的密钥对
-  generateKeyPair,   // 生成密钥对
+  keyPair, // 生成的密钥对
+  generateKeyPair, // 生成密钥对
   encrypt,
   decrypt,
-  sign,             // 数字签名
-  verify            // 验证签名
+  sign, // 数字签名
+  verify // 验证签名
 } = useAsymmetricCrypto()
 
 // 使用示例
@@ -246,7 +250,7 @@ const {
   isLoading,
   error,
   result,
-  hash              // 哈希计算
+  hash // 哈希计算
 } = useHash()
 
 // 使用示例
@@ -262,12 +266,12 @@ const {
   error,
   result,
   keyPair,
-  generateSM2KeyPair,  // 生成SM2密钥对
-  sm2Encrypt,          // SM2加密
-  sm2Decrypt,          // SM2解密
-  sm3Hash,             // SM3哈希
-  sm4Encrypt,          // SM4加密
-  sm4Decrypt           // SM4解密
+  generateSM2KeyPair, // 生成SM2密钥对
+  sm2Encrypt, // SM2加密
+  sm2Decrypt, // SM2解密
+  sm3Hash, // SM3哈希
+  sm4Encrypt, // SM4加密
+  sm4Decrypt // SM4解密
 } = useSM()
 ```
 
@@ -280,16 +284,16 @@ const crypto = createCrypto({
 
   // 性能监控配置
   performance: {
-    enabled: true,        // 启用性能监控
-    detailed: true,       // 详细监控信息
-    threshold: 100        // 性能阈值(ms)，超过会发出警告
+    enabled: true, // 启用性能监控
+    detailed: true, // 详细监控信息
+    threshold: 100 // 性能阈值(ms)，超过会发出警告
   },
 
   // 缓存配置
   cache: {
-    enabled: true,        // 启用缓存
-    maxSize: 1000,        // 最大缓存条目数
-    ttl: 300000          // 缓存过期时间(ms)
+    enabled: true, // 启用缓存
+    maxSize: 1000, // 最大缓存条目数
+    ttl: 300000 // 缓存过期时间(ms)
   },
 
   // 调试模式
@@ -310,7 +314,8 @@ import { CryptoError, CryptoErrorType } from '@ldesign/crypto'
 
 try {
   const result = await crypto.aesEncrypt(data, config)
-} catch (error) {
+}
+ catch (error) {
   if (error instanceof CryptoError) {
     console.log('错误类型:', error.type)
     console.log('算法:', error.algorithm)
@@ -391,17 +396,17 @@ const key = crypto.generateKey('AES', 256) // 256位密钥
 ### 安全实施示例
 ```typescript
 // ✅ 安全的加密实现
-const key = crypto.generateKey('AES', 256)  // 强密钥
+const key = crypto.generateKey('AES', 256) // 强密钥
 const result = await crypto.aesEncrypt(data, {
   key,
-  mode: 'GCM',      // 认证加密模式
+  mode: 'GCM', // 认证加密模式
   padding: 'PKCS7'
 })
 
 // ❌ 不安全的实现
 const result = await crypto.desEncrypt(data, {
-  key: 'weakkey',   // 弱密钥
-  mode: 'ECB'       // 不安全的模式
+  key: 'weakkey', // 弱密钥
+  mode: 'ECB' // 不安全的模式
 })
 ```
 

@@ -19,12 +19,12 @@ aesEncrypt(data: string | ArrayBuffer, options: AESEncryptOptions): Promise<Cryp
 
 ```typescript
 interface AESEncryptOptions {
-  key: string                    // 加密密钥（十六进制字符串）
-  mode?: 'ECB' | 'CBC' | 'CFB' | 'OFB' | 'CTR' | 'GCM'  // 加密模式，默认 'CBC'
-  iv?: string                    // 初始向量（十六进制），CBC/CFB/OFB/CTR/GCM 模式需要
-  padding?: 'PKCS7' | 'PKCS5' | 'ZeroPadding' | 'NoPadding'  // 填充方式，默认 'PKCS7'
-  tagLength?: number             // GCM 模式的标签长度，默认 128
-  additionalData?: string        // GCM 模式的附加认证数据
+  key: string // 加密密钥（十六进制字符串）
+  mode?: 'ECB' | 'CBC' | 'CFB' | 'OFB' | 'CTR' | 'GCM' // 加密模式，默认 'CBC'
+  iv?: string // 初始向量（十六进制），CBC/CFB/OFB/CTR/GCM 模式需要
+  padding?: 'PKCS7' | 'PKCS5' | 'ZeroPadding' | 'NoPadding' // 填充方式，默认 'PKCS7'
+  tagLength?: number // GCM 模式的标签长度，默认 128
+  additionalData?: string // GCM 模式的附加认证数据
 }
 ```
 
@@ -33,10 +33,10 @@ interface AESEncryptOptions {
 ```typescript
 interface CryptoResult {
   success: boolean
-  data?: string                  // 加密后的数据（十六进制）
-  iv?: string                    // 使用的初始向量
-  tag?: string                   // GCM 模式的认证标签
-  error?: string                 // 错误信息
+  data?: string // 加密后的数据（十六进制）
+  iv?: string // 使用的初始向量
+  tag?: string // GCM 模式的认证标签
+  error?: string // 错误信息
 }
 ```
 
@@ -92,12 +92,12 @@ aesDecrypt(encryptedData: string, options: AESDecryptOptions): Promise<CryptoRes
 
 ```typescript
 interface AESDecryptOptions {
-  key: string                    // 解密密钥
+  key: string // 解密密钥
   mode?: 'ECB' | 'CBC' | 'CFB' | 'OFB' | 'CTR' | 'GCM'
-  iv?: string                    // 初始向量（与加密时相同）
+  iv?: string // 初始向量（与加密时相同）
   padding?: 'PKCS7' | 'PKCS5' | 'ZeroPadding' | 'NoPadding'
-  tag?: string                   // GCM 模式的认证标签
-  additionalData?: string        // GCM 模式的附加认证数据
+  tag?: string // GCM 模式的认证标签
+  additionalData?: string // GCM 模式的附加认证数据
 }
 ```
 
@@ -136,9 +136,9 @@ desEncrypt(data: string | ArrayBuffer, options: DESEncryptOptions): Promise<Cryp
 
 ```typescript
 interface DESEncryptOptions {
-  key: string                    // 8字节密钥（十六进制）
-  mode?: 'ECB' | 'CBC'          // 加密模式，默认 'CBC'
-  iv?: string                    // 初始向量（8字节十六进制）
+  key: string // 8字节密钥（十六进制）
+  mode?: 'ECB' | 'CBC' // 加密模式，默认 'CBC'
+  iv?: string // 初始向量（8字节十六进制）
   padding?: 'PKCS7' | 'PKCS5' | 'ZeroPadding'
 }
 ```
@@ -147,7 +147,7 @@ interface DESEncryptOptions {
 
 ```typescript
 // DES 加密（仅用于兼容性）
-const desKey = crypto.generateKey('DES')  // 生成64位DES密钥
+const desKey = crypto.generateKey('DES') // 生成64位DES密钥
 const desResult = await crypto.desEncrypt('Legacy data', {
   key: desKey,
   mode: 'CBC'
@@ -176,9 +176,9 @@ tripleDesEncrypt(data: string | ArrayBuffer, options: TripleDESOptions): Promise
 
 ```typescript
 interface TripleDESOptions {
-  key: string                    // 24字节密钥（十六进制）
+  key: string // 24字节密钥（十六进制）
   mode?: 'ECB' | 'CBC'
-  iv?: string                    // 8字节初始向量
+  iv?: string // 8字节初始向量
   padding?: 'PKCS7' | 'PKCS5' | 'ZeroPadding'
 }
 ```
@@ -187,7 +187,7 @@ interface TripleDESOptions {
 
 ```typescript
 // 3DES 加密
-const tripleDesKey = crypto.generateKey('3DES')  // 生成192位3DES密钥
+const tripleDesKey = crypto.generateKey('3DES') // 生成192位3DES密钥
 const tripleDesResult = await crypto.tripleDesEncrypt('Important data', {
   key: tripleDesKey,
   mode: 'CBC'
@@ -217,11 +217,11 @@ generateKey(algorithm: 'AES' | 'DES' | '3DES' | 'SM4', keySize?: number): string
 
 ```typescript
 // 生成不同算法的密钥
-const aes128Key = crypto.generateKey('AES', 128)    // 32字符十六进制
-const aes256Key = crypto.generateKey('AES', 256)    // 64字符十六进制
-const desKey = crypto.generateKey('DES')            // 16字符十六进制
-const tripleDesKey = crypto.generateKey('3DES')     // 48字符十六进制
-const sm4Key = crypto.generateKey('SM4')            // 32字符十六进制
+const aes128Key = crypto.generateKey('AES', 128) // 32字符十六进制
+const aes256Key = crypto.generateKey('AES', 256) // 64字符十六进制
+const desKey = crypto.generateKey('DES') // 16字符十六进制
+const tripleDesKey = crypto.generateKey('3DES') // 48字符十六进制
+const sm4Key = crypto.generateKey('SM4') // 32字符十六进制
 
 console.log('AES-256 密钥:', aes256Key)
 console.log('密钥长度:', aes256Key.length, '字符')
@@ -244,7 +244,7 @@ interface BatchEncryptOptions {
   algorithm: 'AES' | 'DES' | '3DES' | 'SM4'
   key: string
   mode?: string
-  parallel?: boolean             // 是否并行处理，默认 true
+  parallel?: boolean // 是否并行处理，默认 true
 }
 ```
 
@@ -336,7 +336,7 @@ console.log('DES密钥有效:', isValidDES)
 // 验证无效密钥
 const invalidKey = 'invalid-key'
 const isInvalid = crypto.validateKey(invalidKey, 'AES', 256)
-console.log('无效密钥验证:', isInvalid)  // false
+console.log('无效密钥验证:', isInvalid) // false
 ```
 
 ## 密钥派生
@@ -353,10 +353,10 @@ deriveKey(password: string, options: KeyDerivationOptions): Promise<string>
 
 ```typescript
 interface KeyDerivationOptions {
-  salt: string                   // 盐值
-  iterations: number             // 迭代次数
-  keyLength: number              // 输出密钥长度（字节）
-  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'  // 哈希算法
+  salt: string // 盐值
+  iterations: number // 迭代次数
+  keyLength: number // 输出密钥长度（字节）
+  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512' // 哈希算法
 }
 ```
 
@@ -370,7 +370,7 @@ const salt = crypto.generateRandom({ length: 32, charset: 'hex' })
 const derivedKey = await crypto.deriveKey(password, {
   salt,
   iterations: 100000,
-  keyLength: 32,                 // 256位密钥
+  keyLength: 32, // 256位密钥
   algorithm: 'SHA-256'
 })
 
@@ -391,17 +391,19 @@ const encrypted = await crypto.aesEncrypt('Secret data', {
 // 密钥长度错误
 try {
   await crypto.aesEncrypt('data', { key: 'short-key' })
-} catch (error) {
+}
+ catch (error) {
   console.error('密钥长度错误:', error.message)
 }
 
 // 无效的加密模式
 try {
-  await crypto.aesEncrypt('data', { 
-    key: validKey, 
-    mode: 'INVALID' as any 
+  await crypto.aesEncrypt('data', {
+    key: validKey,
+    mode: 'INVALID' as any
   })
-} catch (error) {
+}
+ catch (error) {
   console.error('无效模式:', error.message)
 }
 
@@ -412,7 +414,8 @@ try {
     mode: 'GCM'
     // 缺少 tag 参数
   })
-} catch (error) {
+}
+ catch (error) {
   console.error('GCM解密错误:', error.message)
 }
 ```
@@ -425,16 +428,18 @@ async function encryptWithRetry(data: string, options: any, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await crypto.aesEncrypt(data, options)
-    } catch (error) {
-      if (i === maxRetries - 1) throw error
-      
+    }
+ catch (error) {
+      if (i === maxRetries - 1)
+throw error
+
       console.warn(`加密失败，重试 ${i + 1}/${maxRetries}:`, error.message)
-      
+
       // 如果是密钥问题，重新生成密钥
       if (error.message.includes('key')) {
         options.key = crypto.generateKey('AES', 256)
       }
-      
+
       // 等待一段时间后重试
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
@@ -450,7 +455,7 @@ async function encryptWithRetry(data: string, options: any, maxRetries = 3) {
 // 密钥缓存管理
 class KeyManager {
   private keys = new Map<string, string>()
-  
+
   getOrCreateKey(name: string, algorithm: string, keySize?: number): string {
     if (!this.keys.has(name)) {
       const key = crypto.generateKey(algorithm as any, keySize)
@@ -458,7 +463,7 @@ class KeyManager {
     }
     return this.keys.get(name)!
   }
-  
+
   rotateKey(name: string, algorithm: string, keySize?: number): string {
     const newKey = crypto.generateKey(algorithm as any, keySize)
     this.keys.set(name, newKey)
@@ -475,16 +480,16 @@ const sessionKey = keyManager.getOrCreateKey('session', 'AES', 256)
 ```typescript
 // 并行加密大量数据
 async function parallelEncrypt(dataChunks: string[], key: string) {
-  const encryptPromises = dataChunks.map(chunk => 
+  const encryptPromises = dataChunks.map(chunk =>
     crypto.aesEncrypt(chunk, { key, mode: 'CBC' })
   )
-  
+
   return Promise.all(encryptPromises)
 }
 
 // 使用示例
 const largeData = 'very large data...'.repeat(1000)
-const chunks = largeData.match(/.{1,1000}/g) || []  // 分成1000字符的块
+const chunks = largeData.match(/.{1,1000}/g) || [] // 分成1000字符的块
 const results = await parallelEncrypt(chunks, aes256Key)
 ```
 

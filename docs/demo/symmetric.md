@@ -71,7 +71,7 @@ class FileEncryption {
     this.keySize = 256
     this.mode = 'GCM'
   }
-  
+
   async encryptFile(file, password) {
     // 1. 从密码派生密钥
     const salt = crypto.generateRandom({ length: 32, charset: 'hex' })
@@ -81,16 +81,16 @@ class FileEncryption {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     // 2. 读取文件内容
     const fileContent = await file.arrayBuffer()
-    
+
     // 3. AES-GCM 加密
     const encrypted = await crypto.aesEncrypt(fileContent, {
       key: key.data,
       mode: 'GCM'
     })
-    
+
     // 4. 返回加密包
     return {
       encryptedData: encrypted.data,
@@ -102,7 +102,7 @@ class FileEncryption {
       timestamp: new Date().toISOString()
     }
   }
-  
+
   async decryptFile(encryptedPackage, password) {
     // 1. 重新派生密钥
     const key = await crypto.pbkdf2(password, {
@@ -111,7 +111,7 @@ class FileEncryption {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     // 2. AES-GCM 解密
     const decrypted = await crypto.aesDecrypt(encryptedPackage.encryptedData, {
       key: key.data,
@@ -119,7 +119,7 @@ class FileEncryption {
       iv: encryptedPackage.iv,
       tag: encryptedPackage.tag
     })
-    
+
     // 3. 创建文件对象
     const blob = new Blob([decrypted.data])
     return new File([blob], encryptedPackage.fileName)
@@ -135,7 +135,7 @@ class DatabaseEncryption {
   constructor(masterKey) {
     this.masterKey = masterKey
   }
-  
+
   // 加密敏感字段
   async encryptField(plaintext, fieldType = 'general') {
     // 为不同字段类型使用不同的派生密钥
@@ -145,12 +145,12 @@ class DatabaseEncryption {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     const encrypted = await crypto.aesEncrypt(plaintext, {
       key: fieldKey.data,
       mode: 'GCM'
     })
-    
+
     // 返回包含所有必要信息的字符串
     return JSON.stringify({
       data: encrypted.data,
@@ -159,25 +159,25 @@ class DatabaseEncryption {
       type: fieldType
     })
   }
-  
+
   // 解密敏感字段
   async decryptField(encryptedField) {
     const { data, iv, tag, type } = JSON.parse(encryptedField)
-    
+
     const fieldKey = await crypto.pbkdf2(this.masterKey, {
       salt: type,
       iterations: 10000,
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     const decrypted = await crypto.aesDecrypt(data, {
       key: fieldKey.data,
       mode: 'GCM',
       iv,
       tag
     })
-    
+
     return decrypted.data
   }
 }
@@ -211,36 +211,36 @@ class APIEncryption {
   constructor() {
     this.sessionKeys = new Map()
   }
-  
+
   // 建立加密会话
   async establishSession(clientId) {
     // 生成会话密钥
     const sessionKey = crypto.generateKey('AES', 256)
     const keyId = crypto.generateRandom({ length: 16, charset: 'hex' })
-    
+
     this.sessionKeys.set(keyId, {
       key: sessionKey,
       clientId,
       createdAt: Date.now(),
-      expiresAt: Date.now() + 3600000  // 1小时过期
+      expiresAt: Date.now() + 3600000 // 1小时过期
     })
-    
+
     return { keyId, sessionKey }
   }
-  
+
   // 加密 API 请求
   async encryptRequest(data, keyId) {
     const session = this.sessionKeys.get(keyId)
     if (!session || session.expiresAt < Date.now()) {
       throw new Error('会话已过期')
     }
-    
+
     const requestData = JSON.stringify(data)
     const encrypted = await crypto.aesEncrypt(requestData, {
       key: session.key,
       mode: 'GCM'
     })
-    
+
     return {
       keyId,
       data: encrypted.data,
@@ -249,23 +249,23 @@ class APIEncryption {
       timestamp: Date.now()
     }
   }
-  
+
   // 解密 API 响应
   async decryptResponse(encryptedResponse) {
     const { keyId, data, iv, tag } = encryptedResponse
     const session = this.sessionKeys.get(keyId)
-    
+
     if (!session) {
       throw new Error('无效的会话')
     }
-    
+
     const decrypted = await crypto.aesDecrypt(data, {
       key: session.key,
       mode: 'GCM',
       iv,
       tag
     })
-    
+
     return JSON.parse(decrypted.data)
   }
 }
@@ -279,14 +279,14 @@ class ConfigEncryption {
   constructor(password) {
     this.password = password
   }
-  
+
   async saveConfig(config, filePath) {
     // 序列化配置
     const configData = JSON.stringify(config, null, 2)
-    
+
     // 生成盐值
     const salt = crypto.generateRandom({ length: 32, charset: 'hex' })
-    
+
     // 派生密钥
     const key = await crypto.pbkdf2(this.password, {
       salt,
@@ -294,13 +294,13 @@ class ConfigEncryption {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     // 加密配置
     const encrypted = await crypto.aesEncrypt(configData, {
       key: key.data,
       mode: 'GCM'
     })
-    
+
     // 创建加密包
     const encryptedPackage = {
       version: '1.0',
@@ -311,17 +311,17 @@ class ConfigEncryption {
       data: encrypted.data,
       createdAt: new Date().toISOString()
     }
-    
+
     // 保存到文件
     const packageData = JSON.stringify(encryptedPackage, null, 2)
     await fs.writeFile(filePath, packageData, 'utf8')
   }
-  
+
   async loadConfig(filePath) {
     // 读取文件
     const packageData = await fs.readFile(filePath, 'utf8')
     const encryptedPackage = JSON.parse(packageData)
-    
+
     // 派生密钥
     const key = await crypto.pbkdf2(this.password, {
       salt: encryptedPackage.salt,
@@ -329,7 +329,7 @@ class ConfigEncryption {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     // 解密配置
     const decrypted = await crypto.aesDecrypt(encryptedPackage.data, {
       key: key.data,
@@ -337,7 +337,7 @@ class ConfigEncryption {
       iv: encryptedPackage.iv,
       tag: encryptedPackage.tag
     })
-    
+
     return JSON.parse(decrypted.data)
   }
 }

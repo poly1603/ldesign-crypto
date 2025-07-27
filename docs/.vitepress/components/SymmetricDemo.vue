@@ -1,3 +1,392 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+
+// 响应式数据
+const algorithm = ref('AES')
+const keySize = ref(256)
+const mode = ref('CBC')
+const padding = ref('PKCS7')
+const encryptionKey = ref('')
+const iv = ref('')
+const plaintext = ref('Hello, 对称加密!')
+const inputEncoding = ref('utf8')
+
+const encryptedData = ref('')
+const decryptedData = ref('')
+const usedIV = ref('')
+const authTag = ref('')
+const error = ref('')
+const isLoading = ref(false)
+const performanceData = ref(null)
+
+// 模拟加密模块
+let crypto = null
+
+onMounted(async () => {
+  crypto = createMockCrypto()
+  generateKey()
+  generateIV()
+})
+
+// 计算属性
+const canEncrypt = computed(() => {
+  return plaintext.value && encryptionKey.value
+    && (mode.value === 'ECB' || iv.value)
+})
+
+// 方法
+function getKeyLength() {
+  switch (algorithm.value) {
+    case 'AES': return keySize.value === 128 ? 32 : keySize.value === 192 ? 48 : 64
+    case 'DES': return 16
+    case '3DES': return 48
+    default: return 32
+  }
+}
+
+function getKeyBits() {
+  switch (algorithm.value) {
+    case 'AES': return keySize.value
+    case 'DES': return 64
+    case '3DES': return 192
+    default: return 256
+  }
+}
+
+function getIVLength() {
+  return algorithm.value === 'AES' ? 32 : 16
+}
+
+function getIVBits() {
+  return algorithm.value === 'AES' ? 128 : 64
+}
+
+function getKeyPlaceholder() {
+  return `${getKeyLength()}位十六进制密钥 (${getKeyBits()}位)`
+}
+
+function getIVPlaceholder() {
+  return `${getIVLength()}位十六进制IV (${getIVBits()}位)`
+}
+
+function getDataLength() {
+  return new TextEncoder().encode(plaintext.value).length
+}
+
+function getBlockCount() {
+  const blockSize = algorithm.value === 'AES' ? 16 : 8
+  return Math.ceil(getDataLength() / blockSize)
+}
+
+function generateKey() {
+  if (!crypto)
+return
+
+  try {
+    encryptionKey.value = crypto.generateKey(algorithm.value, keySize.value)
+  }
+ catch (err) {
+    error.value = `密钥生成失败: ${err.message}`
+  }
+}
+
+function generateIV() {
+  if (!crypto || mode.value === 'ECB')
+return
+
+  try {
+    iv.value = crypto.generateRandom({
+      length: getIVLength(),
+      charset: 'hex',
+    })
+  }
+ catch (err) {
+    error.value = `IV生成失败: ${err.message}`
+  }
+}
+
+async function encrypt() {
+  if (!crypto || !canEncrypt.value)
+return
+
+  isLoading.value = true
+  error.value = ''
+
+  try {
+    const startTime = performance.now()
+
+    const options = {
+      key: encryptionKey.value,
+      mode: mode.value,
+      padding: padding.value,
+    }
+
+    if (mode.value !== 'ECB') {
+      options.iv = iv.value
+    }
+
+    let result
+    switch (algorithm.value) {
+      case 'AES':
+        result = await crypto.aesEncrypt(plaintext.value, options)
+        break
+      case 'DES':
+        result = await crypto.desEncrypt(plaintext.value, options)
+        break
+      case '3DES':
+        result = await crypto.tripleDesEncrypt(plaintext.value, options)
+        break
+    }
+
+    const encryptTime = performance.now() - startTime
+
+    if (result.success) {
+      encryptedData.value = result.data
+      usedIV.value = result.iv || iv.value
+      authTag.value = result.tag || ''
+
+      // 计算性能数据
+      const dataSize = getDataLength() / 1024 / 1024 // MB
+      const throughput = dataSize / (encryptTime / 1000)
+
+      performanceData.value = {
+        algorithm: `${algorithm.value}-${getKeyBits()}-${mode.value}`,
+        encryptTime: encryptTime.toFixed(2),
+        decryptTime: 0,
+        throughput: throughput.toFixed(2),
+      }
+    }
+ else {
+      error.value = result.error
+    }
+  }
+ catch (err) {
+    error.value = `加密失败: ${err.message}`
+  }
+ finally {
+    isLoading.value = false
+  }
+}
+
+async function decrypt() {
+  if (!crypto || !encryptedData.value)
+return
+
+  isLoading.value = true
+  error.value = ''
+
+  try {
+    const startTime = performance.now()
+
+    const options = {
+      key: encryptionKey.value,
+      mode: mode.value,
+      padding: padding.value,
+    }
+
+    if (mode.value !== 'ECB') {
+      options.iv = usedIV.value
+    }
+
+    if (authTag.value) {
+      options.tag = authTag.value
+    }
+
+    let result
+    switch (algorithm.value) {
+      case 'AES':
+        result = await crypto.aesDecrypt(encryptedData.value, options)
+        break
+      case 'DES':
+        result = await crypto.desDecrypt(encryptedData.value, options)
+        break
+      case '3DES':
+        result = await crypto.tripleDesDecrypt(encryptedData.value, options)
+        break
+    }
+
+    const decryptTime = performance.now() - startTime
+
+    if (result.success) {
+      decryptedData.value = result.data
+
+      // 更新性能数据
+      if (performanceData.value) {
+        performanceData.value.decryptTime = decryptTime.toFixed(2)
+      }
+    }
+ else {
+      error.value = result.error
+    }
+  }
+ catch (err) {
+    error.value = `解密失败: ${err.message}`
+  }
+ finally {
+    isLoading.value = false
+  }
+}
+
+function clearAll() {
+  encryptedData.value = ''
+  decryptedData.value = ''
+  usedIV.value = ''
+  authTag.value = ''
+  error.value = ''
+  performanceData.value = null
+}
+
+function clearError() {
+  error.value = ''
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+  }
+ catch (err) {
+    console.error('复制失败:', err)
+  }
+}
+
+// 安全的Base64编码函数，支持Unicode
+function safeBase64Encode(str) {
+  try {
+    // 使用TextEncoder将字符串转换为UTF-8字节
+    const encoder = new TextEncoder()
+    const bytes = encoder.encode(str)
+
+    // 将字节数组转换为二进制字符串
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+
+    // 使用btoa编码二进制字符串
+    return btoa(binary)
+  }
+ catch (error) {
+    // 降级方案：简单的十六进制编码
+    return Array.from(str).map(char =>
+      char.charCodeAt(0).toString(16).padStart(4, '0'),
+    ).join('')
+  }
+}
+
+// 安全的Base64解码函数，支持Unicode
+function safeBase64Decode(encodedStr) {
+  try {
+    // 尝试Base64解码
+    const binary = atob(encodedStr)
+
+    // 将二进制字符串转换为字节数组
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i)
+    }
+
+    // 使用TextDecoder将字节数组转换为UTF-8字符串
+    const decoder = new TextDecoder()
+    return decoder.decode(bytes)
+  }
+ catch (error) {
+    // 降级方案：十六进制解码
+    try {
+      const chars = []
+      for (let i = 0; i < encodedStr.length; i += 4) {
+        const hex = encodedStr.substr(i, 4)
+        chars.push(String.fromCharCode(Number.parseInt(hex, 16)))
+      }
+      return chars.join('')
+    }
+ catch (e) {
+      return encodedStr // 如果都失败了，返回原字符串
+    }
+  }
+}
+
+// 创建模拟加密模块
+function createMockCrypto() {
+  return {
+    generateKey(algorithm, keySize) {
+      const keyLengths = {
+        'AES': keySize === 128 ? 32 : keySize === 192 ? 48 : 64,
+        'DES': 16,
+        '3DES': 48,
+      }
+      const length = keyLengths[algorithm] || 64
+      return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+    },
+
+    generateRandom(options) {
+      const length = options.length || 32
+      return Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+    },
+
+    async aesEncrypt(data, options) {
+      const mockEncrypted = safeBase64Encode(`${data}-aes-encrypted-${Date.now()}`)
+      return {
+        success: true,
+        data: mockEncrypted,
+        iv: options.iv || this.generateRandom({ length: 32, charset: 'hex' }),
+        tag: options.mode === 'GCM' ? this.generateRandom({ length: 32, charset: 'hex' }) : undefined,
+      }
+    },
+
+    async aesDecrypt(data, options) {
+      try {
+        const decoded = safeBase64Decode(data)
+        const original = decoded.split('-aes-encrypted-')[0]
+        return { success: true, data: original }
+      }
+ catch {
+        return { success: false, error: 'AES解密失败' }
+      }
+    },
+
+    async desEncrypt(data, options) {
+      const mockEncrypted = safeBase64Encode(`${data}-des-encrypted-${Date.now()}`)
+      return {
+        success: true,
+        data: mockEncrypted,
+        iv: options.iv || this.generateRandom({ length: 16, charset: 'hex' }),
+      }
+    },
+
+    async desDecrypt(data, options) {
+      try {
+        const decoded = safeBase64Decode(data)
+        const original = decoded.split('-des-encrypted-')[0]
+        return { success: true, data: original }
+      }
+ catch {
+        return { success: false, error: 'DES解密失败' }
+      }
+    },
+
+    async tripleDesEncrypt(data, options) {
+      const mockEncrypted = safeBase64Encode(`${data}-3des-encrypted-${Date.now()}`)
+      return {
+        success: true,
+        data: mockEncrypted,
+        iv: options.iv || this.generateRandom({ length: 16, charset: 'hex' }),
+      }
+    },
+
+    async tripleDesDecrypt(data, options) {
+      try {
+        const decoded = safeBase64Decode(data)
+        const original = decoded.split('-3des-encrypted-')[0]
+        return { success: true, data: original }
+      }
+ catch {
+        return { success: false, error: '3DES解密失败' }
+      }
+    },
+  }
+}
+</script>
+
 <template>
   <div class="symmetric-demo">
     <div class="demo-header">
@@ -12,40 +401,72 @@
       <div class="form-group">
         <label>加密算法:</label>
         <select v-model="algorithm">
-          <option value="AES">AES (推荐)</option>
-          <option value="DES">DES (兼容)</option>
-          <option value="3DES">3DES (兼容)</option>
+          <option value="AES">
+            AES (推荐)
+          </option>
+          <option value="DES">
+            DES (兼容)
+          </option>
+          <option value="3DES">
+            3DES (兼容)
+          </option>
         </select>
       </div>
 
       <div v-if="algorithm === 'AES'" class="form-group">
         <label>密钥长度:</label>
         <select v-model="keySize">
-          <option :value="128">128位</option>
-          <option :value="192">192位</option>
-          <option :value="256">256位 (推荐)</option>
+          <option :value="128">
+            128位
+          </option>
+          <option :value="192">
+            192位
+          </option>
+          <option :value="256">
+            256位 (推荐)
+          </option>
         </select>
       </div>
 
       <div class="form-group">
         <label>加密模式:</label>
         <select v-model="mode">
-          <option value="CBC">CBC (推荐)</option>
-          <option value="ECB">ECB (不安全)</option>
-          <option value="GCM" v-if="algorithm === 'AES'">GCM (认证加密)</option>
-          <option value="CFB" v-if="algorithm === 'AES'">CFB</option>
-          <option value="OFB" v-if="algorithm === 'AES'">OFB</option>
-          <option value="CTR" v-if="algorithm === 'AES'">CTR</option>
+          <option value="CBC">
+            CBC (推荐)
+          </option>
+          <option value="ECB">
+            ECB (不安全)
+          </option>
+          <option v-if="algorithm === 'AES'" value="GCM">
+            GCM (认证加密)
+          </option>
+          <option v-if="algorithm === 'AES'" value="CFB">
+            CFB
+          </option>
+          <option v-if="algorithm === 'AES'" value="OFB">
+            OFB
+          </option>
+          <option v-if="algorithm === 'AES'" value="CTR">
+            CTR
+          </option>
         </select>
       </div>
 
       <div class="form-group">
         <label>填充方式:</label>
         <select v-model="padding">
-          <option value="PKCS7">PKCS7 (推荐)</option>
-          <option value="PKCS5">PKCS5</option>
-          <option value="ZeroPadding">Zero Padding</option>
-          <option value="NoPadding" v-if="mode !== 'ECB' && mode !== 'CBC'">No Padding</option>
+          <option value="PKCS7">
+            PKCS7 (推荐)
+          </option>
+          <option value="PKCS5">
+            PKCS5
+          </option>
+          <option value="ZeroPadding">
+            Zero Padding
+          </option>
+          <option v-if="mode !== 'ECB' && mode !== 'CBC'" value="NoPadding">
+            No Padding
+          </option>
         </select>
       </div>
     </div>
@@ -61,8 +482,10 @@
             v-model="encryptionKey"
             :placeholder="getKeyPlaceholder()"
             :maxlength="getKeyLength()"
-          />
-          <button @click="generateKey" class="btn-generate">生成密钥</button>
+          >
+          <button class="btn-generate" @click="generateKey">
+            生成密钥
+          </button>
         </div>
       </div>
 
@@ -73,8 +496,10 @@
             v-model="iv"
             :placeholder="getIVPlaceholder()"
             :maxlength="getIVLength()"
-          />
-          <button @click="generateIV" class="btn-generate">生成IV</button>
+          >
+          <button class="btn-generate" @click="generateIV">
+            生成IV
+          </button>
         </div>
       </div>
 
@@ -100,15 +525,21 @@
           v-model="plaintext"
           placeholder="输入要加密的数据"
           rows="4"
-        ></textarea>
+        />
       </div>
 
       <div class="form-group">
         <label>数据编码:</label>
         <select v-model="inputEncoding">
-          <option value="utf8">UTF-8 文本</option>
-          <option value="hex">十六进制</option>
-          <option value="base64">Base64</option>
+          <option value="utf8">
+            UTF-8 文本
+          </option>
+          <option value="hex">
+            十六进制
+          </option>
+          <option value="base64">
+            Base64
+          </option>
         </select>
       </div>
 
@@ -121,22 +552,22 @@
     <!-- 操作按钮 -->
     <div class="actions">
       <button
-        @click="encrypt"
         :disabled="isLoading || !canEncrypt"
         class="btn-primary"
+        @click="encrypt"
       >
         {{ isLoading ? '加密中...' : '🔒 加密' }}
       </button>
 
       <button
-        @click="decrypt"
         :disabled="isLoading || !encryptedData"
         class="btn-secondary"
+        @click="decrypt"
       >
         {{ isLoading ? '解密中...' : '🔓 解密' }}
       </button>
 
-      <button @click="clearAll" class="btn-clear">
+      <button class="btn-clear" @click="clearAll">
         🗑️ 清空
       </button>
     </div>
@@ -147,30 +578,38 @@
 
       <div v-if="encryptedData" class="result-item">
         <label>🔒 加密数据:</label>
-        <textarea :value="encryptedData" readonly rows="3"></textarea>
+        <textarea :value="encryptedData" readonly rows="3" />
         <div class="result-actions">
-          <button @click="copyToClipboard(encryptedData)" class="btn-copy">📋 复制</button>
+          <button class="btn-copy" @click="copyToClipboard(encryptedData)">
+            📋 复制
+          </button>
           <span class="result-info">长度: {{ encryptedData.length }} 字符</span>
         </div>
       </div>
 
       <div v-if="usedIV" class="result-item">
         <label>🔢 使用的IV:</label>
-        <input :value="usedIV" readonly />
-        <button @click="copyToClipboard(usedIV)" class="btn-copy">📋</button>
+        <input :value="usedIV" readonly>
+        <button class="btn-copy" @click="copyToClipboard(usedIV)">
+          📋
+        </button>
       </div>
 
       <div v-if="authTag" class="result-item">
         <label>🏷️ 认证标签 (GCM):</label>
-        <input :value="authTag" readonly />
-        <button @click="copyToClipboard(authTag)" class="btn-copy">📋</button>
+        <input :value="authTag" readonly>
+        <button class="btn-copy" @click="copyToClipboard(authTag)">
+          📋
+        </button>
       </div>
 
       <div v-if="decryptedData" class="result-item">
         <label>🔓 解密数据:</label>
-        <textarea :value="decryptedData" readonly rows="3"></textarea>
+        <textarea :value="decryptedData" readonly rows="3" />
         <div class="result-actions">
-          <button @click="copyToClipboard(decryptedData)" class="btn-copy">📋 复制</button>
+          <button class="btn-copy" @click="copyToClipboard(decryptedData)">
+            📋 复制
+          </button>
           <span class="result-info">
             验证: {{ decryptedData === plaintext ? '✅ 成功' : '❌ 失败' }}
           </span>
@@ -204,8 +643,12 @@
     <!-- 错误显示 -->
     <div v-if="error" class="error-section">
       <h3>❌ 错误信息</h3>
-      <div class="error-content">{{ error }}</div>
-      <button @click="clearError" class="btn-clear">清除错误</button>
+      <div class="error-content">
+        {{ error }}
+      </div>
+      <button class="btn-clear" @click="clearError">
+        清除错误
+      </button>
     </div>
 
     <!-- 算法说明 -->
@@ -245,376 +688,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-
-// 响应式数据
-const algorithm = ref('AES')
-const keySize = ref(256)
-const mode = ref('CBC')
-const padding = ref('PKCS7')
-const encryptionKey = ref('')
-const iv = ref('')
-const plaintext = ref('Hello, 对称加密!')
-const inputEncoding = ref('utf8')
-
-const encryptedData = ref('')
-const decryptedData = ref('')
-const usedIV = ref('')
-const authTag = ref('')
-const error = ref('')
-const isLoading = ref(false)
-const performanceData = ref(null)
-
-// 模拟加密模块
-let crypto = null
-
-onMounted(async () => {
-  crypto = createMockCrypto()
-  generateKey()
-  generateIV()
-})
-
-// 计算属性
-const canEncrypt = computed(() => {
-  return plaintext.value && encryptionKey.value &&
-         (mode.value === 'ECB' || iv.value)
-})
-
-// 方法
-const getKeyLength = () => {
-  switch (algorithm.value) {
-    case 'AES': return keySize.value === 128 ? 32 : keySize.value === 192 ? 48 : 64
-    case 'DES': return 16
-    case '3DES': return 48
-    default: return 32
-  }
-}
-
-const getKeyBits = () => {
-  switch (algorithm.value) {
-    case 'AES': return keySize.value
-    case 'DES': return 64
-    case '3DES': return 192
-    default: return 256
-  }
-}
-
-const getIVLength = () => {
-  return algorithm.value === 'AES' ? 32 : 16
-}
-
-const getIVBits = () => {
-  return algorithm.value === 'AES' ? 128 : 64
-}
-
-const getKeyPlaceholder = () => {
-  return `${getKeyLength()}位十六进制密钥 (${getKeyBits()}位)`
-}
-
-const getIVPlaceholder = () => {
-  return `${getIVLength()}位十六进制IV (${getIVBits()}位)`
-}
-
-const getDataLength = () => {
-  return new TextEncoder().encode(plaintext.value).length
-}
-
-const getBlockCount = () => {
-  const blockSize = algorithm.value === 'AES' ? 16 : 8
-  return Math.ceil(getDataLength() / blockSize)
-}
-
-const generateKey = () => {
-  if (!crypto) return
-
-  try {
-    encryptionKey.value = crypto.generateKey(algorithm.value, keySize.value)
-  } catch (err) {
-    error.value = '密钥生成失败: ' + err.message
-  }
-}
-
-const generateIV = () => {
-  if (!crypto || mode.value === 'ECB') return
-
-  try {
-    iv.value = crypto.generateRandom({
-      length: getIVLength(),
-      charset: 'hex'
-    })
-  } catch (err) {
-    error.value = 'IV生成失败: ' + err.message
-  }
-}
-
-const encrypt = async () => {
-  if (!crypto || !canEncrypt.value) return
-
-  isLoading.value = true
-  error.value = ''
-
-  try {
-    const startTime = performance.now()
-
-    const options = {
-      key: encryptionKey.value,
-      mode: mode.value,
-      padding: padding.value
-    }
-
-    if (mode.value !== 'ECB') {
-      options.iv = iv.value
-    }
-
-    let result
-    switch (algorithm.value) {
-      case 'AES':
-        result = await crypto.aesEncrypt(plaintext.value, options)
-        break
-      case 'DES':
-        result = await crypto.desEncrypt(plaintext.value, options)
-        break
-      case '3DES':
-        result = await crypto.tripleDesEncrypt(plaintext.value, options)
-        break
-    }
-
-    const encryptTime = performance.now() - startTime
-
-    if (result.success) {
-      encryptedData.value = result.data
-      usedIV.value = result.iv || iv.value
-      authTag.value = result.tag || ''
-
-      // 计算性能数据
-      const dataSize = getDataLength() / 1024 / 1024 // MB
-      const throughput = dataSize / (encryptTime / 1000)
-
-      performanceData.value = {
-        algorithm: `${algorithm.value}-${getKeyBits()}-${mode.value}`,
-        encryptTime: encryptTime.toFixed(2),
-        decryptTime: 0,
-        throughput: throughput.toFixed(2)
-      }
-    } else {
-      error.value = result.error
-    }
-  } catch (err) {
-    error.value = '加密失败: ' + err.message
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const decrypt = async () => {
-  if (!crypto || !encryptedData.value) return
-
-  isLoading.value = true
-  error.value = ''
-
-  try {
-    const startTime = performance.now()
-
-    const options = {
-      key: encryptionKey.value,
-      mode: mode.value,
-      padding: padding.value
-    }
-
-    if (mode.value !== 'ECB') {
-      options.iv = usedIV.value
-    }
-
-    if (authTag.value) {
-      options.tag = authTag.value
-    }
-
-    let result
-    switch (algorithm.value) {
-      case 'AES':
-        result = await crypto.aesDecrypt(encryptedData.value, options)
-        break
-      case 'DES':
-        result = await crypto.desDecrypt(encryptedData.value, options)
-        break
-      case '3DES':
-        result = await crypto.tripleDesDecrypt(encryptedData.value, options)
-        break
-    }
-
-    const decryptTime = performance.now() - startTime
-
-    if (result.success) {
-      decryptedData.value = result.data
-
-      // 更新性能数据
-      if (performanceData.value) {
-        performanceData.value.decryptTime = decryptTime.toFixed(2)
-      }
-    } else {
-      error.value = result.error
-    }
-  } catch (err) {
-    error.value = '解密失败: ' + err.message
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const clearAll = () => {
-  encryptedData.value = ''
-  decryptedData.value = ''
-  usedIV.value = ''
-  authTag.value = ''
-  error.value = ''
-  performanceData.value = null
-}
-
-const clearError = () => {
-  error.value = ''
-}
-
-const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch (err) {
-    console.error('复制失败:', err)
-  }
-}
-
-// 安全的Base64编码函数，支持Unicode
-function safeBase64Encode(str) {
-  try {
-    // 使用TextEncoder将字符串转换为UTF-8字节
-    const encoder = new TextEncoder()
-    const bytes = encoder.encode(str)
-
-    // 将字节数组转换为二进制字符串
-    let binary = ''
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i])
-    }
-
-    // 使用btoa编码二进制字符串
-    return btoa(binary)
-  } catch (error) {
-    // 降级方案：简单的十六进制编码
-    return Array.from(str).map(char =>
-      char.charCodeAt(0).toString(16).padStart(4, '0')
-    ).join('')
-  }
-}
-
-// 安全的Base64解码函数，支持Unicode
-function safeBase64Decode(encodedStr) {
-  try {
-    // 尝试Base64解码
-    const binary = atob(encodedStr)
-
-    // 将二进制字符串转换为字节数组
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i)
-    }
-
-    // 使用TextDecoder将字节数组转换为UTF-8字符串
-    const decoder = new TextDecoder()
-    return decoder.decode(bytes)
-  } catch (error) {
-    // 降级方案：十六进制解码
-    try {
-      const chars = []
-      for (let i = 0; i < encodedStr.length; i += 4) {
-        const hex = encodedStr.substr(i, 4)
-        chars.push(String.fromCharCode(parseInt(hex, 16)))
-      }
-      return chars.join('')
-    } catch (e) {
-      return encodedStr // 如果都失败了，返回原字符串
-    }
-  }
-}
-
-// 创建模拟加密模块
-function createMockCrypto() {
-  return {
-    generateKey(algorithm, keySize) {
-      const keyLengths = {
-        'AES': keySize === 128 ? 32 : keySize === 192 ? 48 : 64,
-        'DES': 16,
-        '3DES': 48
-      }
-      const length = keyLengths[algorithm] || 64
-      return Array.from({length}, () => Math.floor(Math.random() * 16).toString(16)).join('')
-    },
-
-    generateRandom(options) {
-      const length = options.length || 32
-      return Array.from({length}, () => Math.floor(Math.random() * 16).toString(16)).join('')
-    },
-
-    async aesEncrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-aes-encrypted-' + Date.now())
-      return {
-        success: true,
-        data: mockEncrypted,
-        iv: options.iv || this.generateRandom({ length: 32, charset: 'hex' }),
-        tag: options.mode === 'GCM' ? this.generateRandom({ length: 32, charset: 'hex' }) : undefined
-      }
-    },
-
-    async aesDecrypt(data, options) {
-      try {
-        const decoded = safeBase64Decode(data)
-        const original = decoded.split('-aes-encrypted-')[0]
-        return { success: true, data: original }
-      } catch {
-        return { success: false, error: 'AES解密失败' }
-      }
-    },
-
-    async desEncrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-des-encrypted-' + Date.now())
-      return {
-        success: true,
-        data: mockEncrypted,
-        iv: options.iv || this.generateRandom({ length: 16, charset: 'hex' })
-      }
-    },
-
-    async desDecrypt(data, options) {
-      try {
-        const decoded = safeBase64Decode(data)
-        const original = decoded.split('-des-encrypted-')[0]
-        return { success: true, data: original }
-      } catch {
-        return { success: false, error: 'DES解密失败' }
-      }
-    },
-
-    async tripleDesEncrypt(data, options) {
-      const mockEncrypted = safeBase64Encode(data + '-3des-encrypted-' + Date.now())
-      return {
-        success: true,
-        data: mockEncrypted,
-        iv: options.iv || this.generateRandom({ length: 16, charset: 'hex' })
-      }
-    },
-
-    async tripleDesDecrypt(data, options) {
-      try {
-        const decoded = safeBase64Decode(data)
-        const original = decoded.split('-3des-encrypted-')[0]
-        return { success: true, data: original }
-      } catch {
-        return { success: false, error: '3DES解密失败' }
-      }
-    }
-  }
-}
-</script>
 
 <style scoped>
 .symmetric-demo {

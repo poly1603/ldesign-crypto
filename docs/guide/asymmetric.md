@@ -14,7 +14,7 @@ graph TB
     A[发送方] --> B[使用接收方公钥加密]
     B --> C[发送密文]
     C --> D[接收方使用私钥解密]
-    
+
     E[签名方] --> F[使用私钥签名]
     F --> G[发送数据+签名]
     G --> H[验证方使用公钥验证]
@@ -47,9 +47,9 @@ const crypto = createCrypto()
 await crypto.init()
 
 // 生成不同长度的 RSA 密钥对
-const rsa1024 = await crypto.generateRSAKeyPair(1024)  // 不推荐，安全性低
-const rsa2048 = await crypto.generateRSAKeyPair(2048)  // 推荐
-const rsa4096 = await crypto.generateRSAKeyPair(4096)  // 高安全性
+const rsa1024 = await crypto.generateRSAKeyPair(1024) // 不推荐，安全性低
+const rsa2048 = await crypto.generateRSAKeyPair(2048) // 推荐
+const rsa4096 = await crypto.generateRSAKeyPair(4096) // 高安全性
 
 console.log('RSA-2048 密钥对:', rsa2048)
 ```
@@ -63,7 +63,7 @@ const plaintext = 'Hello, RSA Encryption!'
 // 公钥加密
 const encrypted = await crypto.rsaEncrypt(plaintext, {
   publicKey: keyPair.publicKey,
-  padding: 'OAEP'  // 推荐使用 OAEP 填充
+  padding: 'OAEP' // 推荐使用 OAEP 填充
 })
 
 console.log('加密结果:', encrypted.data)
@@ -86,7 +86,7 @@ const message = 'Important document content'
 // 私钥签名
 const signature = await crypto.rsaSign(message, {
   privateKey: keyPair.privateKey,
-  algorithm: 'SHA-256'  // 哈希算法
+  algorithm: 'SHA-256' // 哈希算法
 })
 
 console.log('数字签名:', signature.signature)
@@ -129,9 +129,9 @@ ECC 提供与 RSA 相同的安全级别，但使用更短的密钥。
 
 ```typescript
 // 生成不同曲线的密钥对
-const p256 = await crypto.generateECCKeyPair('P-256')    // 256位，相当于RSA-3072
-const p384 = await crypto.generateECCKeyPair('P-384')    // 384位，相当于RSA-7680
-const p521 = await crypto.generateECCKeyPair('P-521')    // 521位，相当于RSA-15360
+const p256 = await crypto.generateECCKeyPair('P-256') // 256位，相当于RSA-3072
+const p384 = await crypto.generateECCKeyPair('P-384') // 384位，相当于RSA-7680
+const p521 = await crypto.generateECCKeyPair('P-521') // 521位，相当于RSA-15360
 
 console.log('ECC P-256 密钥对:', p256)
 ```
@@ -216,19 +216,19 @@ const importedKey = crypto.importKey(publicKeyJWK, 'JWK', 'public')
 async function hybridEncryption(data: string, publicKey: string) {
   // 1. 生成随机的 AES 密钥
   const aesKey = crypto.generateKey('AES', 256)
-  
+
   // 2. 使用 AES 加密数据
   const encryptedData = await crypto.aesEncrypt(data, {
     key: aesKey,
     mode: 'GCM'
   })
-  
+
   // 3. 使用 RSA 加密 AES 密钥
   const encryptedKey = await crypto.rsaEncrypt(aesKey, {
     publicKey,
     padding: 'OAEP'
   })
-  
+
   return {
     encryptedData: encryptedData.data,
     encryptedKey: encryptedKey.data,
@@ -243,7 +243,7 @@ async function hybridDecryption(encryptedPackage: any, privateKey: string) {
     privateKey,
     padding: 'OAEP'
   })
-  
+
   // 2. 使用 AES 解密数据
   const decryptedData = await crypto.aesDecrypt(encryptedPackage.encryptedData, {
     key: decryptedKey.data,
@@ -251,7 +251,7 @@ async function hybridDecryption(encryptedPackage: any, privateKey: string) {
     iv: encryptedPackage.iv,
     tag: encryptedPackage.tag
   })
-  
+
   return decryptedData.data
 }
 
@@ -327,21 +327,22 @@ console.log('证书验证:', isValid)
 ```typescript
 class KeyManager {
   private keyCache = new Map()
-  
+
   async getOrGenerateKeyPair(algorithm: string, keySize: number) {
     const cacheKey = `${algorithm}-${keySize}`
-    
+
     if (this.keyCache.has(cacheKey)) {
       return this.keyCache.get(cacheKey)
     }
-    
+
     let keyPair
     if (algorithm === 'RSA') {
       keyPair = await crypto.generateRSAKeyPair(keySize)
-    } else if (algorithm === 'ECC') {
+    }
+ else if (algorithm === 'ECC') {
       keyPair = await crypto.generateECCKeyPair(`P-${keySize}`)
     }
-    
+
     this.keyCache.set(cacheKey, keyPair)
     return keyPair
   }
@@ -357,7 +358,7 @@ const keyPair = await keyManager.getOrGenerateKeyPair('RSA', 2048)
 // 批量签名
 async function batchSign(messages: string[], privateKey: string) {
   return Promise.all(
-    messages.map(message => 
+    messages.map(message =>
       crypto.rsaSign(message, {
         privateKey,
         algorithm: 'SHA-256'
@@ -368,8 +369,8 @@ async function batchSign(messages: string[], privateKey: string) {
 
 // 批量验证
 async function batchVerify(
-  messages: string[], 
-  signatures: string[], 
+  messages: string[],
+  signatures: string[],
   publicKey: string
 ) {
   return Promise.all(
@@ -405,7 +406,7 @@ async function batchVerify(
 
 ```typescript
 // ❌ 错误：使用弱密钥
-const weakKey = await crypto.generateRSAKeyPair(1024)  // 不安全
+const weakKey = await crypto.generateRSAKeyPair(1024) // 不安全
 
 // ✅ 正确：使用强密钥
 const strongKey = await crypto.generateRSAKeyPair(2048)
@@ -413,13 +414,13 @@ const strongKey = await crypto.generateRSAKeyPair(2048)
 // ❌ 错误：使用不安全的填充
 const encrypted = await crypto.rsaEncrypt(data, {
   publicKey,
-  padding: 'PKCS1'  // 不推荐
+  padding: 'PKCS1' // 不推荐
 })
 
 // ✅ 正确：使用安全的填充
 const encrypted = await crypto.rsaEncrypt(data, {
   publicKey,
-  padding: 'OAEP'  // 推荐
+  padding: 'OAEP' // 推荐
 })
 ```
 
@@ -432,19 +433,19 @@ const encrypted = await crypto.rsaEncrypt(data, {
 class SecureChannel {
   private serverPublicKey: string
   private clientKeyPair: any
-  
+
   async establishChannel(serverPublicKey: string) {
     this.serverPublicKey = serverPublicKey
     this.clientKeyPair = await crypto.generateRSAKeyPair(2048)
-    
+
     // 发送客户端公钥给服务器
     return this.clientKeyPair.publicKey
   }
-  
+
   async sendSecureMessage(message: string) {
     return hybridEncryption(message, this.serverPublicKey)
   }
-  
+
   async receiveSecureMessage(encryptedPackage: any) {
     return hybridDecryption(encryptedPackage, this.clientKeyPair.privateKey)
   }
@@ -457,17 +458,17 @@ class SecureChannel {
 // 文档签名系统
 class DocumentSigner {
   private keyPair: any
-  
+
   async initialize() {
     this.keyPair = await crypto.generateRSAKeyPair(2048)
   }
-  
+
   async signDocument(document: string) {
     const signature = await crypto.rsaSign(document, {
       privateKey: this.keyPair.privateKey,
       algorithm: 'SHA-256'
     })
-    
+
     return {
       document,
       signature: signature.signature,
@@ -475,7 +476,7 @@ class DocumentSigner {
       timestamp: new Date().toISOString()
     }
   }
-  
+
   async verifyDocument(signedDocument: any) {
     return crypto.rsaVerify(
       signedDocument.document,

@@ -15,10 +15,10 @@
 graph LR
     A[任意长度输入] --> B[哈希函数]
     B --> C[固定长度输出]
-    
+
     D[输入1: Hello] --> E[SHA-256]
     E --> F[输出1: 185f8db32271fe25f561a6fc938b2e264306ec304eda518007d1764826381969]
-    
+
     G[输入2: Hello!] --> H[SHA-256]
     H --> I[输出2: 334d016f755cd6dc58c53a86e183882f8ec14f52fb05345887c8a5edd42c87b7]
 ```
@@ -54,7 +54,7 @@ console.log('SHA-512:', hash512.data)
 
 // 自定义输出长度
 const hash384 = await crypto.sha512('Hello World', {
-  outputLength: 384  // SHA-384
+  outputLength: 384 // SHA-384
 })
 ```
 
@@ -96,13 +96,13 @@ const sm3WithId = await crypto.sm3('Hello World', {
 async function calculateFileHash(file: File) {
   const chunkSize = 1024 * 1024 // 1MB 分块
   const hasher = crypto.createHasher('SHA-256')
-  
+
   for (let offset = 0; offset < file.size; offset += chunkSize) {
     const chunk = file.slice(offset, offset + chunkSize)
     const arrayBuffer = await chunk.arrayBuffer()
     hasher.update(new Uint8Array(arrayBuffer))
   }
-  
+
   return hasher.finalize()
 }
 
@@ -190,14 +190,14 @@ console.log('HMAC-SM3:', hmacSm3.data)
 // 安全的密码哈希
 async function hashPassword(password: string) {
   const salt = crypto.generateRandom({ length: 32, charset: 'hex' })
-  
+
   const hash = await crypto.pbkdf2(password, {
     salt,
-    iterations: 100000,    // 迭代次数
-    keyLength: 32,         // 输出长度
-    algorithm: 'SHA-256'   // 哈希算法
+    iterations: 100000, // 迭代次数
+    keyLength: 32, // 输出长度
+    algorithm: 'SHA-256' // 哈希算法
   })
-  
+
   return {
     hash: hash.data,
     salt,
@@ -214,7 +214,7 @@ async function verifyPassword(password: string, stored: any) {
     keyLength: 32,
     algorithm: stored.algorithm
   })
-  
+
   return hash.data === stored.hash
 }
 
@@ -234,20 +234,20 @@ console.log('密码验证:', isCorrect)
 async function deriveKeys(masterPassword: string, salt: string) {
   // 派生加密密钥
   const encryptionKey = await crypto.pbkdf2(masterPassword, {
-    salt: salt + '-encryption',
+    salt: `${salt}-encryption`,
     iterations: 100000,
     keyLength: 32,
     algorithm: 'SHA-256'
   })
-  
+
   // 派生认证密钥
   const authKey = await crypto.pbkdf2(masterPassword, {
-    salt: salt + '-auth',
+    salt: `${salt}-auth`,
     iterations: 100000,
     keyLength: 32,
     algorithm: 'SHA-256'
   })
-  
+
   return {
     encryptionKey: encryptionKey.data,
     authKey: authKey.data
@@ -262,25 +262,25 @@ async function deriveKeys(masterPassword: string, salt: string) {
 ```typescript
 class FileIntegrityChecker {
   private checksums = new Map<string, string>()
-  
+
   // 计算并存储文件校验和
   async addFile(fileName: string, fileData: string | ArrayBuffer) {
     const hash = await crypto.sha256(fileData)
     this.checksums.set(fileName, hash.data)
     return hash.data
   }
-  
+
   // 验证文件完整性
   async verifyFile(fileName: string, fileData: string | ArrayBuffer) {
     const storedHash = this.checksums.get(fileName)
     if (!storedHash) {
       throw new Error('文件校验和不存在')
     }
-    
+
     const currentHash = await crypto.sha256(fileData)
     return currentHash.data === storedHash
   }
-  
+
   // 获取所有文件的校验和
   getAllChecksums() {
     return Object.fromEntries(this.checksums)
@@ -309,17 +309,17 @@ class DataPacket {
     public checksum: string,
     public timestamp: number
   ) {}
-  
+
   static async create(data: string) {
     const hash = await crypto.sha256(data)
     return new DataPacket(data, hash.data, Date.now())
   }
-  
+
   async verify() {
     const hash = await crypto.sha256(this.data)
     return hash.data === this.checksum
   }
-  
+
   isExpired(maxAge: number = 300000) { // 5分钟
     return Date.now() - this.timestamp > maxAge
   }
@@ -360,26 +360,26 @@ console.log('批量哈希结果:', hashes)
 class HashCache {
   private cache = new Map<string, string>()
   private maxSize = 1000
-  
+
   async getHash(data: string, algorithm = 'SHA-256') {
     const cacheKey = `${algorithm}:${data}`
-    
+
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)
     }
-    
+
     const hash = await crypto.hash(data, algorithm)
-    
+
     // 简单的 LRU 缓存
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
       this.cache.delete(firstKey)
     }
-    
+
     this.cache.set(cacheKey, hash.data)
     return hash.data
   }
-  
+
   clearCache() {
     this.cache.clear()
   }
@@ -408,7 +408,7 @@ const hash = await hashCache.getHash('test data')
 const secureHash = await crypto.sha256(data)
 
 // ❌ 错误：使用弱哈希算法
-const weakHash = await crypto.md5(data)  // 仅用于兼容性
+const weakHash = await crypto.md5(data) // 仅用于兼容性
 
 // ✅ 正确：密码哈希使用盐值和多次迭代
 const passwordHash = await crypto.pbkdf2(password, {
@@ -417,13 +417,13 @@ const passwordHash = await crypto.pbkdf2(password, {
 })
 
 // ❌ 错误：直接哈希密码
-const directHash = await crypto.sha256(password)  // 不安全
+const directHash = await crypto.sha256(password) // 不安全
 
 // ✅ 正确：使用 HMAC 进行消息认证
 const authenticatedMessage = await crypto.hmac(message, secretKey)
 
 // ❌ 错误：仅使用哈希进行认证
-const unauthenticatedHash = await crypto.sha256(message)  // 可被篡改
+const unauthenticatedHash = await crypto.sha256(message) // 可被篡改
 ```
 
 ### 时间攻击防护
@@ -434,12 +434,12 @@ function secureCompare(hash1: string, hash2: string): boolean {
   if (hash1.length !== hash2.length) {
     return false
   }
-  
+
   let result = 0
   for (let i = 0; i < hash1.length; i++) {
     result |= hash1.charCodeAt(i) ^ hash2.charCodeAt(i)
   }
-  
+
   return result === 0
 }
 
@@ -459,7 +459,7 @@ class UserAuth {
   async registerUser(username: string, password: string) {
     // 生成随机盐值
     const salt = crypto.generateRandom({ length: 32, charset: 'hex' })
-    
+
     // 哈希密码
     const passwordHash = await crypto.pbkdf2(password, {
       salt,
@@ -467,7 +467,7 @@ class UserAuth {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     // 存储用户信息
     return {
       username,
@@ -476,7 +476,7 @@ class UserAuth {
       createdAt: new Date().toISOString()
     }
   }
-  
+
   async authenticateUser(username: string, password: string, storedUser: any) {
     const passwordHash = await crypto.pbkdf2(password, {
       salt: storedUser.salt,
@@ -484,7 +484,7 @@ class UserAuth {
       keyLength: 32,
       algorithm: 'SHA-256'
     })
-    
+
     return secureCompare(passwordHash.data, storedUser.passwordHash)
   }
 }
@@ -501,16 +501,16 @@ class SimpleBlock {
     public timestamp: number = Date.now(),
     public nonce: number = 0
   ) {}
-  
+
   async calculateHash(): Promise<string> {
     const blockData = `${this.index}${this.data}${this.previousHash}${this.timestamp}${this.nonce}`
     const hash = await crypto.sha256(blockData)
     return hash.data
   }
-  
+
   async mineBlock(difficulty: number): Promise<void> {
     const target = '0'.repeat(difficulty)
-    
+
     while (true) {
       const hash = await this.calculateHash()
       if (hash.substring(0, difficulty) === target) {
@@ -524,7 +524,7 @@ class SimpleBlock {
 
 // 使用示例
 const block = new SimpleBlock(1, 'Transaction data', 'previous-hash')
-await block.mineBlock(4)  // 挖掘难度为4的区块
+await block.mineBlock(4) // 挖掘难度为4的区块
 ```
 
 ### 3. 文件去重系统
@@ -532,32 +532,32 @@ await block.mineBlock(4)  // 挖掘难度为4的区块
 ```typescript
 class FileDeduplication {
   private fileHashes = new Map<string, string[]>()
-  
+
   async addFile(fileName: string, fileData: ArrayBuffer) {
     const hash = await crypto.sha256(fileData)
-    
+
     if (!this.fileHashes.has(hash.data)) {
       this.fileHashes.set(hash.data, [])
     }
-    
+
     this.fileHashes.get(hash.data)!.push(fileName)
-    
+
     return {
       hash: hash.data,
       isDuplicate: this.fileHashes.get(hash.data)!.length > 1,
       duplicateFiles: this.fileHashes.get(hash.data)!
     }
   }
-  
+
   getDuplicates() {
     const duplicates = new Map<string, string[]>()
-    
+
     for (const [hash, files] of this.fileHashes) {
       if (files.length > 1) {
         duplicates.set(hash, files)
       }
     }
-    
+
     return duplicates
   }
 }

@@ -9,10 +9,10 @@ import type {
   EncodingFormat,
   HashConfig,
   KeyPair,
-  SignatureResult,
   SM2Config,
   SM4Config,
-  VerifyResult
+  SignatureResult,
+  VerifyResult,
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
 
@@ -32,14 +32,15 @@ export class SM2Crypto {
       return {
         publicKey: keypair.publicKey,
         privateKey: keypair.privateKey,
-        format: 'HEX'
+        format: 'HEX',
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `SM2 key generation failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -52,7 +53,7 @@ export class SM2Crypto {
       const {
         publicKey,
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       if (!publicKey) {
@@ -63,12 +64,13 @@ export class SM2Crypto {
       const encrypted = sm2.doEncrypt(data, publicKey, 1) // 1表示C1C3C2模式
 
       return this.formatOutput(encrypted, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SM2 encryption failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -81,7 +83,7 @@ export class SM2Crypto {
       const {
         privateKey,
         inputEncoding = 'hex',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       if (!privateKey) {
@@ -92,12 +94,13 @@ export class SM2Crypto {
       const decrypted = sm2.doDecrypt(encryptedData, privateKey, 1) // 1表示C1C3C2模式
 
       return decrypted
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `SM2 decryption failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -111,7 +114,7 @@ export class SM2Crypto {
         privateKey,
         userId = '1234567812345678', // 默认用户标识
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       if (!privateKey) {
@@ -121,20 +124,21 @@ export class SM2Crypto {
       // SM2签名
       const signature = sm2.doSignature(data, privateKey, {
         hash: true,
-        userId
+        userId,
       })
 
       return {
         signature: this.formatOutput(signature, outputEncoding),
         algorithm: 'SM2-SM3',
-        encoding: outputEncoding
+        encoding: outputEncoding,
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.SIGNATURE_FAILED,
         `SM2 signing failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -147,7 +151,7 @@ export class SM2Crypto {
       const {
         publicKey,
         userId = '1234567812345678',
-        inputEncoding = 'utf8'
+        inputEncoding = 'utf8',
       } = config
 
       if (!publicKey) {
@@ -157,14 +161,15 @@ export class SM2Crypto {
       // SM2验签
       const valid = sm2.doVerifySignature(data, signature, publicKey, {
         hash: true,
-        userId
+        userId,
       })
 
       return { valid }
-    } catch (error) {
+    }
+ catch (error) {
       return {
         valid: false,
-        error: `SM2 verification failed: ${error}`
+        error: `SM2 verification failed: ${error}`,
       }
     }
   }
@@ -175,12 +180,13 @@ export class SM2Crypto {
   static getPublicKeyFromPrivate(privateKey: string): string {
     try {
       return sm2.getPublicKeyFromPrivateKey(privateKey)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.INVALID_KEY,
         `Failed to derive public key: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -215,19 +221,20 @@ export class SM3Crypto {
     try {
       const {
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       // SM3哈希计算
       const hash = sm3(data)
 
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SM3 hashing failed: ${error}`,
         'SM3',
-        error
+        error,
       )
     }
   }
@@ -241,7 +248,7 @@ export class SM3Crypto {
 
       // 实现SM3 HMAC
       const ipad = Buffer.alloc(64, 0x36)
-      const opad = Buffer.alloc(64, 0x5c)
+      const opad = Buffer.alloc(64, 0x5C)
 
       // 处理密钥
       let keyBuffer = Buffer.from(key, 'utf8')
@@ -264,12 +271,13 @@ export class SM3Crypto {
       const outerHash = sm3(Buffer.concat([opad, Buffer.from(innerHash, 'hex')]).toString('hex'))
 
       return this.formatOutput(outerHash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SM3 HMAC failed: ${error}`,
         'SM3',
-        error
+        error,
       )
     }
   }
@@ -306,7 +314,7 @@ export class SM4Crypto {
         key,
         mode = 'ECB',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       let encrypted: string
@@ -314,7 +322,8 @@ export class SM4Crypto {
       if (mode === 'ECB') {
         // ECB模式
         encrypted = sm4.encrypt(data, key)
-      } else {
+      }
+ else {
         // CBC模式
         const { iv } = config
         if (!iv) {
@@ -324,12 +333,13 @@ export class SM4Crypto {
       }
 
       return this.formatOutput(encrypted, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SM4 encryption failed: ${error}`,
         'SM4',
-        error
+        error,
       )
     }
   }
@@ -343,7 +353,7 @@ export class SM4Crypto {
         key,
         mode = 'ECB',
         inputEncoding = 'hex',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       let decrypted: string
@@ -351,7 +361,8 @@ export class SM4Crypto {
       if (mode === 'ECB') {
         // ECB模式
         decrypted = sm4.decrypt(encryptedData, key)
-      } else {
+      }
+ else {
         // CBC模式
         const { iv } = config
         if (!iv) {
@@ -361,12 +372,13 @@ export class SM4Crypto {
       }
 
       return decrypted
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `SM4 decryption failed: ${error}`,
         'SM4',
-        error
+        error,
       )
     }
   }
@@ -378,16 +390,16 @@ export class SM4Crypto {
     try {
       // 生成128位随机密钥
       const key = Array.from({ length: 32 }, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('')
+        Math.floor(Math.random() * 16).toString(16)).join('')
 
       return key
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `SM4 key generation failed: ${error}`,
         'SM4',
-        error
+        error,
       )
     }
   }
@@ -422,12 +434,14 @@ export class SMUtils {
     try {
       if (type === 'public') {
         // 公钥应该是130个字符（04 + 64字节坐标）
-        return /^04[0-9a-fA-F]{128}$/.test(key)
-      } else {
-        // 私钥应该是64个字符（32字节）
-        return /^[0-9a-fA-F]{64}$/.test(key)
+        return /^04[0-9a-f]{128}$/i.test(key)
       }
-    } catch {
+ else {
+        // 私钥应该是64个字符（32字节）
+        return /^[0-9a-f]{64}$/i.test(key)
+      }
+    }
+ catch {
       return false
     }
   }
@@ -438,8 +452,9 @@ export class SMUtils {
   static validateSM4Key(key: string): boolean {
     try {
       // SM4密钥应该是32个字符（16字节）
-      return /^[0-9a-fA-F]{32}$/.test(key)
-    } catch {
+      return /^[0-9a-f]{32}$/i.test(key)
+    }
+ catch {
       return false
     }
   }
@@ -480,12 +495,13 @@ export class SMUtils {
         default:
           throw new Error(`Unsupported target encoding: ${to}`)
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.INVALID_KEY,
         `Key format conversion failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -504,5 +520,5 @@ export const SMPlugin: CryptoPlugin = {
 
   async destroy() {
     console.log('[SMPlugin] Destroyed')
-  }
+  },
 }

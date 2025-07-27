@@ -3,19 +3,19 @@
  * 提供Vue 3组合式API和组件支持
  */
 
-import { ref, reactive, computed, inject, provide, type App, type InjectionKey } from 'vue'
+import { type App, type InjectionKey, computed, inject, ref } from 'vue'
 import { CryptoAPI } from '../core/CryptoAPI'
 import type {
-  CryptoManagerConfig,
-  SymmetricConfig,
   AsymmetricConfig,
+  CryptoManagerConfig,
+  CryptoResult,
   HashConfig,
+  KeyPair,
   SM2Config,
   SM4Config,
-  CryptoResult,
-  KeyPair,
   SignatureResult,
-  VerifyResult
+  SymmetricConfig,
+  VerifyResult,
 } from '../types'
 
 // 注入键
@@ -26,11 +26,11 @@ export const CryptoAPIKey: InjectionKey<CryptoAPI> = Symbol('CryptoAPI')
  */
 export function install(app: App, config: CryptoManagerConfig = {}) {
   const cryptoAPI = new CryptoAPI(config)
-  
+
   // 初始化API
   cryptoAPI.init().then(() => {
     console.log('[LDesign Crypto] Vue plugin initialized')
-  }).catch(error => {
+  }).catch((error) => {
     console.error('[LDesign Crypto] Vue plugin initialization failed:', error)
   })
 
@@ -55,7 +55,7 @@ export function useCrypto(): CryptoAPI {
  */
 export function useSymmetricCrypto() {
   const crypto = useCrypto()
-  
+
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const result = ref<string | null>(null)
@@ -67,7 +67,7 @@ export function useSymmetricCrypto() {
 
     try {
       let cryptoResult: CryptoResult
-      
+
       switch (algorithm) {
         case 'AES':
           cryptoResult = await crypto.aesEncrypt(data, config)
@@ -84,12 +84,15 @@ export function useSymmetricCrypto() {
 
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -101,7 +104,7 @@ export function useSymmetricCrypto() {
 
     try {
       let cryptoResult: CryptoResult
-      
+
       switch (algorithm) {
         case 'AES':
           cryptoResult = await crypto.aesDecrypt(encryptedData, config)
@@ -118,12 +121,15 @@ export function useSymmetricCrypto() {
 
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -133,7 +139,7 @@ export function useSymmetricCrypto() {
     error: computed(() => error.value),
     result: computed(() => result.value),
     encrypt,
-    decrypt
+    decrypt,
   }
 }
 
@@ -142,7 +148,7 @@ export function useSymmetricCrypto() {
  */
 export function useAsymmetricCrypto() {
   const crypto = useCrypto()
-  
+
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const result = ref<string | null>(null)
@@ -155,12 +161,15 @@ export function useAsymmetricCrypto() {
     try {
       if (algorithm === 'RSA') {
         keyPair.value = await crypto.generateRSAKeyPair(keySize)
-      } else {
+      }
+ else {
         keyPair.value = await crypto.generateSM2KeyPair()
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -172,21 +181,25 @@ export function useAsymmetricCrypto() {
 
     try {
       let cryptoResult: CryptoResult
-      
+
       if (algorithm === 'RSA') {
         cryptoResult = await crypto.rsaEncrypt(data, config as AsymmetricConfig)
-      } else {
+      }
+ else {
         cryptoResult = await crypto.sm2Encrypt(data, config as SM2Config)
       }
 
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -198,21 +211,25 @@ export function useAsymmetricCrypto() {
 
     try {
       let cryptoResult: CryptoResult
-      
+
       if (algorithm === 'RSA') {
         cryptoResult = await crypto.rsaDecrypt(encryptedData, config as AsymmetricConfig)
-      } else {
+      }
+ else {
         cryptoResult = await crypto.sm2Decrypt(encryptedData, config as SM2Config)
       }
 
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -223,17 +240,20 @@ export function useAsymmetricCrypto() {
 
     try {
       let signatureResult: SignatureResult
-      
+
       if (algorithm === 'RSA') {
         signatureResult = await crypto.rsaSign(data, config as AsymmetricConfig)
-      } else {
+      }
+ else {
         signatureResult = await crypto.sm2Sign(data, config as SM2Config)
       }
 
       result.value = signatureResult.signature
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -244,10 +264,11 @@ export function useAsymmetricCrypto() {
 
     try {
       let verifyResult: VerifyResult
-      
+
       if (algorithm === 'RSA') {
         verifyResult = await crypto.rsaVerify(data, signature, config as AsymmetricConfig)
-      } else {
+      }
+ else {
         verifyResult = await crypto.sm2Verify(data, signature, config as SM2Config)
       }
 
@@ -255,9 +276,11 @@ export function useAsymmetricCrypto() {
       if (verifyResult.error) {
         error.value = verifyResult.error
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -271,7 +294,7 @@ export function useAsymmetricCrypto() {
     encrypt,
     decrypt,
     sign,
-    verify
+    verify,
   }
 }
 
@@ -280,15 +303,15 @@ export function useAsymmetricCrypto() {
  */
 export function useHash() {
   const crypto = useCrypto()
-  
+
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const result = ref<string | null>(null)
 
   const hash = async (
-    data: string, 
+    data: string,
     algorithm: 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' | 'SM3' = 'SHA256',
-    config: HashConfig = {}
+    config: HashConfig = {},
   ) => {
     isLoading.value = true
     error.value = null
@@ -296,7 +319,7 @@ export function useHash() {
 
     try {
       let cryptoResult: CryptoResult
-      
+
       switch (algorithm) {
         case 'MD5':
           cryptoResult = await crypto.md5(data, config)
@@ -319,12 +342,15 @@ export function useHash() {
 
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -333,7 +359,7 @@ export function useHash() {
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
     result: computed(() => result.value),
-    hash
+    hash,
   }
 }
 
@@ -342,7 +368,7 @@ export function useHash() {
  */
 export function useSM() {
   const crypto = useCrypto()
-  
+
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const result = ref<string | null>(null)
@@ -354,9 +380,11 @@ export function useSM() {
 
     try {
       keyPair.value = await crypto.generateSM2KeyPair()
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -370,12 +398,15 @@ export function useSM() {
       const cryptoResult = await crypto.sm2Encrypt(data, config)
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -389,12 +420,15 @@ export function useSM() {
       const cryptoResult = await crypto.sm2Decrypt(encryptedData, config)
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -408,12 +442,15 @@ export function useSM() {
       const cryptoResult = await crypto.sm3(data, config)
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -427,12 +464,15 @@ export function useSM() {
       const cryptoResult = await crypto.sm4Encrypt(data, config)
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -446,12 +486,15 @@ export function useSM() {
       const cryptoResult = await crypto.sm4Decrypt(encryptedData, config)
       if (cryptoResult.success) {
         result.value = cryptoResult.data!
-      } else {
+      }
+ else {
         error.value = cryptoResult.error!
       }
-    } catch (err) {
+    }
+ catch (err) {
       error.value = err instanceof Error ? err.message : String(err)
-    } finally {
+    }
+ finally {
       isLoading.value = false
     }
   }
@@ -466,6 +509,6 @@ export function useSM() {
     sm2Decrypt,
     sm3Hash,
     sm4Encrypt,
-    sm4Decrypt
+    sm4Decrypt,
   }
 }

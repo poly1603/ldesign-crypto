@@ -12,16 +12,16 @@ interface CryptoPlugin {
   version: string
   description?: string
   dependencies?: string[]
-  
+
   // 生命周期钩子
-  install?(crypto: CryptoInstance): Promise<void> | void
-  uninstall?(crypto: CryptoInstance): Promise<void> | void
-  
+  install?: (crypto: CryptoInstance) => Promise<void> | void
+  uninstall?: (crypto: CryptoInstance) => Promise<void> | void
+
   // 功能扩展
   algorithms?: AlgorithmExtension[]
   providers?: ProviderExtension[]
   middleware?: MiddlewareExtension[]
-  
+
   // 配置选项
   options?: PluginOptions
 }
@@ -52,52 +52,52 @@ class BasePlugin implements CryptoPlugin {
   name: string
   version: string
   description: string
-  
+
   constructor(options: PluginOptions = {}) {
     this.name = options.name || 'base-plugin'
     this.version = options.version || '1.0.0'
     this.description = options.description || 'Base plugin template'
   }
-  
+
   async install(crypto: CryptoInstance) {
     console.log(`安装插件: ${this.name} v${this.version}`)
-    
+
     // 注册算法
     this.registerAlgorithms(crypto)
-    
+
     // 注册提供者
     this.registerProviders(crypto)
-    
+
     // 注册中间件
     this.registerMiddleware(crypto)
-    
+
     // 初始化插件
     await this.initialize(crypto)
   }
-  
+
   async uninstall(crypto: CryptoInstance) {
     console.log(`卸载插件: ${this.name}`)
-    
+
     // 清理资源
     await this.cleanup(crypto)
   }
-  
+
   protected registerAlgorithms(crypto: CryptoInstance) {
     // 子类实现
   }
-  
+
   protected registerProviders(crypto: CryptoInstance) {
     // 子类实现
   }
-  
+
   protected registerMiddleware(crypto: CryptoInstance) {
     // 子类实现
   }
-  
+
   protected async initialize(crypto: CryptoInstance) {
     // 子类实现
   }
-  
+
   protected async cleanup(crypto: CryptoInstance) {
     // 子类实现
   }
@@ -117,7 +117,7 @@ class ChaCha20Plugin extends BasePlugin {
       description: 'ChaCha20 stream cipher implementation'
     })
   }
-  
+
   protected registerAlgorithms(crypto: CryptoInstance) {
     crypto.registerAlgorithm({
       name: 'ChaCha20',
@@ -130,10 +130,10 @@ class ChaCha20Plugin extends BasePlugin {
 class ChaCha20Implementation implements AlgorithmImplementation {
   async encrypt(data: ArrayBuffer, options: EncryptionOptions): Promise<EncryptionResult> {
     const { key, nonce } = options
-    
+
     // ChaCha20 加密实现
     const encrypted = await this.chaCha20Encrypt(data, key, nonce)
-    
+
     return {
       data: encrypted,
       algorithm: 'ChaCha20',
@@ -141,88 +141,88 @@ class ChaCha20Implementation implements AlgorithmImplementation {
       iv: nonce
     }
   }
-  
+
   async decrypt(data: ArrayBuffer, options: DecryptionOptions): Promise<DecryptionResult> {
     const { key, nonce } = options
-    
+
     // ChaCha20 解密实现
     const decrypted = await this.chaCha20Decrypt(data, key, nonce)
-    
+
     return {
       data: decrypted,
       algorithm: 'ChaCha20',
       mode: 'stream'
     }
   }
-  
+
   private async chaCha20Encrypt(data: ArrayBuffer, key: ArrayBuffer, nonce: ArrayBuffer): Promise<ArrayBuffer> {
     // ChaCha20 核心算法实现
     const state = this.initializeState(key, nonce)
     const keystream = this.generateKeystream(state, data.byteLength)
-    
+
     return this.xorBuffers(data, keystream)
   }
-  
+
   private async chaCha20Decrypt(data: ArrayBuffer, key: ArrayBuffer, nonce: ArrayBuffer): Promise<ArrayBuffer> {
     // ChaCha20 解密（与加密相同）
     return this.chaCha20Encrypt(data, key, nonce)
   }
-  
+
   private initializeState(key: ArrayBuffer, nonce: ArrayBuffer): Uint32Array {
     const state = new Uint32Array(16)
-    
+
     // 常量
     state[0] = 0x61707865
-    state[1] = 0x3320646e
-    state[2] = 0x79622d32
-    state[3] = 0x6b206574
-    
+    state[1] = 0x3320646E
+    state[2] = 0x79622D32
+    state[3] = 0x6B206574
+
     // 密钥
     const keyView = new Uint32Array(key)
     for (let i = 0; i < 8; i++) {
       state[4 + i] = keyView[i]
     }
-    
+
     // 计数器
     state[12] = 0
-    
+
     // Nonce
     const nonceView = new Uint32Array(nonce)
     for (let i = 0; i < 3; i++) {
       state[13 + i] = nonceView[i]
     }
-    
+
     return state
   }
-  
+
   private generateKeystream(initialState: Uint32Array, length: number): ArrayBuffer {
     const keystream = new ArrayBuffer(length)
     const keystreamView = new Uint8Array(keystream)
-    
+
     let offset = 0
     let counter = 0
-    
+
     while (offset < length) {
       const state = new Uint32Array(initialState)
       state[12] = counter++
-      
+
       // ChaCha20 quarter round
       this.chaCha20Block(state)
-      
+
       // 转换为字节流
       const blockBytes = new Uint8Array(state.buffer)
       const bytesToCopy = Math.min(64, length - offset)
-      
+
       keystreamView.set(blockBytes.subarray(0, bytesToCopy), offset)
       offset += bytesToCopy
     }
-    
+
     return keystream
   }
-  
+
   private chaCha20Block(state: Uint32Array) {
     const x = new Uint32Array(state)
-    
+
     // 20 rounds
     for (let i = 0; i < 10; i++) {
       // Column rounds
@@ -230,48 +230,48 @@ class ChaCha20Implementation implements AlgorithmImplementation {
       this.quarterRound(x, 1, 5, 9, 13)
       this.quarterRound(x, 2, 6, 10, 14)
       this.quarterRound(x, 3, 7, 11, 15)
-      
+
       // Diagonal rounds
       this.quarterRound(x, 0, 5, 10, 15)
       this.quarterRound(x, 1, 6, 11, 12)
       this.quarterRound(x, 2, 7, 8, 13)
       this.quarterRound(x, 3, 4, 9, 14)
     }
-    
+
     // Add original state
     for (let i = 0; i < 16; i++) {
       state[i] = (x[i] + state[i]) >>> 0
     }
   }
-  
+
   private quarterRound(x: Uint32Array, a: number, b: number, c: number, d: number) {
     x[a] = (x[a] + x[b]) >>> 0
     x[d] = this.rotateLeft(x[d] ^ x[a], 16)
-    
+
     x[c] = (x[c] + x[d]) >>> 0
     x[b] = this.rotateLeft(x[b] ^ x[c], 12)
-    
+
     x[a] = (x[a] + x[b]) >>> 0
     x[d] = this.rotateLeft(x[d] ^ x[a], 8)
-    
+
     x[c] = (x[c] + x[d]) >>> 0
     x[b] = this.rotateLeft(x[b] ^ x[c], 7)
   }
-  
+
   private rotateLeft(value: number, shift: number): number {
     return ((value << shift) | (value >>> (32 - shift))) >>> 0
   }
-  
+
   private xorBuffers(a: ArrayBuffer, b: ArrayBuffer): ArrayBuffer {
     const result = new ArrayBuffer(a.byteLength)
     const aView = new Uint8Array(a)
     const bView = new Uint8Array(b)
     const resultView = new Uint8Array(result)
-    
+
     for (let i = 0; i < aView.length; i++) {
       resultView[i] = aView[i] ^ bView[i]
     }
-    
+
     return result
   }
 }
@@ -288,7 +288,7 @@ class Blake2bPlugin extends BasePlugin {
       description: 'BLAKE2b hash function implementation'
     })
   }
-  
+
   protected registerAlgorithms(crypto: CryptoInstance) {
     crypto.registerAlgorithm({
       name: 'BLAKE2b',
@@ -300,138 +300,143 @@ class Blake2bPlugin extends BasePlugin {
 
 class Blake2bImplementation implements HashImplementation {
   private readonly IV = [
-    0x6a09e667f3bcc908n, 0xbb67ae8584caa73bn,
-    0x3c6ef372fe94f82bn, 0xa54ff53a5f1d36f1n,
-    0x510e527fade682d1n, 0x9b05688c2b3e6c1fn,
-    0x1f83d9abfb41bd6bn, 0x5be0cd19137e2179n
+    0x6A09E667F3BCC908n,
+0xBB67AE8584CAA73Bn,
+    0x3C6EF372FE94F82Bn,
+0xA54FF53A5F1D36F1n,
+    0x510E527FADE682D1n,
+0x9B05688C2B3E6C1Fn,
+    0x1F83D9ABFB41BD6Bn,
+0x5BE0CD19137E2179n
   ]
-  
+
   async hash(data: ArrayBuffer, options: HashOptions = {}): Promise<ArrayBuffer> {
     const outputLength = options.outputLength || 64
     const key = options.key || new ArrayBuffer(0)
-    
+
     return this.blake2b(data, outputLength, key)
   }
-  
+
   private async blake2b(data: ArrayBuffer, outputLength: number, key: ArrayBuffer): Promise<ArrayBuffer> {
     // 初始化状态
     const h = [...this.IV]
     h[0] ^= BigInt(0x01010000 ^ (key.byteLength << 8) ^ outputLength)
-    
+
     // 处理密钥块（如果有）
     if (key.byteLength > 0) {
       const keyBlock = new ArrayBuffer(128)
       new Uint8Array(keyBlock).set(new Uint8Array(key))
       this.compress(h, keyBlock, 128, false)
     }
-    
+
     // 处理数据块
     const dataView = new Uint8Array(data)
     let offset = 0
-    
+
     while (offset + 128 <= dataView.length) {
       const block = dataView.slice(offset, offset + 128).buffer
       this.compress(h, block, key.byteLength + offset + 128, false)
       offset += 128
     }
-    
+
     // 处理最后一块
     if (offset < dataView.length) {
       const lastBlock = new ArrayBuffer(128)
       const lastBlockView = new Uint8Array(lastBlock)
       lastBlockView.set(dataView.slice(offset))
-      
+
       this.compress(h, lastBlock, key.byteLength + dataView.length, true)
-    } else if (dataView.length === 0) {
+    }
+ else if (dataView.length === 0) {
       // 空输入的特殊情况
       const emptyBlock = new ArrayBuffer(128)
       this.compress(h, emptyBlock, key.byteLength, true)
     }
-    
+
     // 生成输出
     const output = new ArrayBuffer(outputLength)
     const outputView = new Uint8Array(output)
     const hBytes = new ArrayBuffer(64)
     const hView = new DataView(hBytes)
-    
+
     for (let i = 0; i < 8; i++) {
       hView.setBigUint64(i * 8, h[i], true)
     }
-    
+
     outputView.set(new Uint8Array(hBytes, 0, outputLength))
-    
+
     return output
   }
-  
+
   private compress(h: bigint[], block: ArrayBuffer, counter: number, isLast: boolean) {
     // BLAKE2b 压缩函数实现
-    const v = new Array(16)
-    const m = new Array(16)
-    
+    const v = Array.from({ length: 16 })
+    const m = Array.from({ length: 16 })
+
     // 初始化工作向量
     for (let i = 0; i < 8; i++) {
       v[i] = h[i]
       v[i + 8] = this.IV[i]
     }
-    
-    v[12] ^= BigInt(counter & 0xffffffff)
+
+    v[12] ^= BigInt(counter & 0xFFFFFFFF)
     v[13] ^= BigInt(counter >>> 32)
-    
+
     if (isLast) {
       v[14] = ~v[14]
     }
-    
+
     // 读取消息块
     const blockView = new DataView(block)
     for (let i = 0; i < 16; i++) {
       m[i] = blockView.getBigUint64(i * 8, true)
     }
-    
+
     // 12 轮混合
     const sigma = [
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
       [14, 10, 4, 8, 9, 15, 13, 6, 1, 12, 0, 2, 11, 7, 5, 3],
       // ... 其他轮的置换表
     ]
-    
+
     for (let round = 0; round < 12; round++) {
       const s = sigma[round % 10]
-      
+
       // 列混合
       this.mix(v, 0, 4, 8, 12, m[s[0]], m[s[1]])
       this.mix(v, 1, 5, 9, 13, m[s[2]], m[s[3]])
       this.mix(v, 2, 6, 10, 14, m[s[4]], m[s[5]])
       this.mix(v, 3, 7, 11, 15, m[s[6]], m[s[7]])
-      
+
       // 对角线混合
       this.mix(v, 0, 5, 10, 15, m[s[8]], m[s[9]])
       this.mix(v, 1, 6, 11, 12, m[s[10]], m[s[11]])
       this.mix(v, 2, 7, 8, 13, m[s[12]], m[s[13]])
       this.mix(v, 3, 4, 9, 14, m[s[14]], m[s[15]])
     }
-    
+
     // 更新状态
     for (let i = 0; i < 8; i++) {
       h[i] ^= v[i] ^ v[i + 8]
     }
   }
-  
+
   private mix(v: bigint[], a: number, b: number, c: number, d: number, x: bigint, y: bigint) {
-    v[a] = (v[a] + v[b] + x) & 0xffffffffffffffffn
+    v[a] = (v[a] + v[b] + x) & 0xFFFFFFFFFFFFFFFFn
     v[d] = this.rotr64(v[d] ^ v[a], 32)
-    
-    v[c] = (v[c] + v[d]) & 0xffffffffffffffffn
+
+    v[c] = (v[c] + v[d]) & 0xFFFFFFFFFFFFFFFFn
     v[b] = this.rotr64(v[b] ^ v[c], 24)
-    
-    v[a] = (v[a] + v[b] + y) & 0xffffffffffffffffn
+
+    v[a] = (v[a] + v[b] + y) & 0xFFFFFFFFFFFFFFFFn
     v[d] = this.rotr64(v[d] ^ v[a], 16)
-    
-    v[c] = (v[c] + v[d]) & 0xffffffffffffffffn
+
+    v[c] = (v[c] + v[d]) & 0xFFFFFFFFFFFFFFFFn
     v[b] = this.rotr64(v[b] ^ v[c], 63)
   }
-  
+
   private rotr64(value: bigint, shift: number): bigint {
-    return ((value >> BigInt(shift)) | (value << BigInt(64 - shift))) & 0xffffffffffffffffn
+    return ((value >> BigInt(shift)) | (value << BigInt(64 - shift))) & 0xFFFFFFFFFFFFFFFFn
   }
 }
 ```
@@ -448,10 +453,10 @@ class HSMPlugin extends BasePlugin {
       version: '1.0.0',
       description: 'Hardware Security Module provider'
     })
-    
+
     this.hsmOptions = options
   }
-  
+
   protected registerProviders(crypto: CryptoInstance) {
     crypto.registerProvider({
       name: 'HSM',
@@ -463,13 +468,13 @@ class HSMPlugin extends BasePlugin {
 
 class HSMProvider implements ProviderImplementation {
   private connection: HSMConnection
-  
+
   constructor(private options: HSMOptions) {}
-  
+
   async initialize(): Promise<void> {
     this.connection = await this.connectToHSM()
   }
-  
+
   async generateKey(algorithm: string, keySize: number): Promise<ArrayBuffer> {
     return this.connection.generateKey({
       algorithm,
@@ -478,7 +483,7 @@ class HSMProvider implements ProviderImplementation {
       usage: ['encrypt', 'decrypt']
     })
   }
-  
+
   async encrypt(data: ArrayBuffer, key: ArrayBuffer, options: EncryptionOptions): Promise<EncryptionResult> {
     return this.connection.encrypt({
       data,
@@ -488,7 +493,7 @@ class HSMProvider implements ProviderImplementation {
       iv: options.iv
     })
   }
-  
+
   async decrypt(data: ArrayBuffer, key: ArrayBuffer, options: DecryptionOptions): Promise<DecryptionResult> {
     return this.connection.decrypt({
       data,
@@ -498,7 +503,7 @@ class HSMProvider implements ProviderImplementation {
       iv: options.iv
     })
   }
-  
+
   async sign(data: ArrayBuffer, privateKey: ArrayBuffer, algorithm: string): Promise<ArrayBuffer> {
     return this.connection.sign({
       data,
@@ -506,7 +511,7 @@ class HSMProvider implements ProviderImplementation {
       algorithm
     })
   }
-  
+
   async verify(signature: ArrayBuffer, data: ArrayBuffer, publicKey: ArrayBuffer, algorithm: string): Promise<boolean> {
     return this.connection.verify({
       signature,
@@ -515,7 +520,7 @@ class HSMProvider implements ProviderImplementation {
       algorithm
     })
   }
-  
+
   private async connectToHSM(): Promise<HSMConnection> {
     // 连接到HSM设备
     const connection = new HSMConnection(this.options)
@@ -535,10 +540,10 @@ class CloudKMSPlugin extends BasePlugin {
       version: '1.0.0',
       description: 'Cloud Key Management Service provider'
     })
-    
+
     this.kmsOptions = options
   }
-  
+
   protected registerProviders(crypto: CryptoInstance) {
     crypto.registerProvider({
       name: 'CloudKMS',
@@ -550,47 +555,47 @@ class CloudKMSPlugin extends BasePlugin {
 
 class CloudKMSProvider implements ProviderImplementation {
   private client: KMSClient
-  
+
   constructor(private options: CloudKMSOptions) {}
-  
+
   async initialize(): Promise<void> {
     this.client = new KMSClient({
       region: this.options.region,
       credentials: this.options.credentials
     })
   }
-  
+
   async generateKey(algorithm: string, keySize: number): Promise<string> {
     const response = await this.client.createKey({
       KeyUsage: 'ENCRYPT_DECRYPT',
       KeySpec: `${algorithm}_${keySize}`,
       Description: `Generated by @ldesign/crypto`
     })
-    
+
     return response.KeyMetadata.KeyId
   }
-  
+
   async encrypt(data: ArrayBuffer, keyId: string, options: EncryptionOptions): Promise<EncryptionResult> {
     const response = await this.client.encrypt({
       KeyId: keyId,
       Plaintext: data,
       EncryptionAlgorithm: options.algorithm
     })
-    
+
     return {
       data: response.CiphertextBlob,
       algorithm: options.algorithm,
       keyId: response.KeyId
     }
   }
-  
+
   async decrypt(data: ArrayBuffer, keyId: string, options: DecryptionOptions): Promise<DecryptionResult> {
     const response = await this.client.decrypt({
       CiphertextBlob: data,
       KeyId: keyId,
       EncryptionAlgorithm: options.algorithm
     })
-    
+
     return {
       data: response.Plaintext,
       algorithm: options.algorithm,
@@ -612,10 +617,10 @@ class AuditLogPlugin extends BasePlugin {
       version: '1.0.0',
       description: 'Audit logging middleware'
     })
-    
+
     this.auditOptions = options
   }
-  
+
   protected registerMiddleware(crypto: CryptoInstance) {
     crypto.registerMiddleware({
       name: 'audit-log',
@@ -627,29 +632,30 @@ class AuditLogPlugin extends BasePlugin {
 
 class AuditLogMiddleware implements MiddlewareHandler {
   constructor(private options: AuditLogOptions) {}
-  
+
   async handle(context: MiddlewareContext, next: NextFunction): Promise<any> {
     const startTime = Date.now()
     const auditId = this.generateAuditId()
-    
+
     // 记录操作开始
     await this.logOperationStart(auditId, context)
-    
+
     try {
       const result = await next()
-      
+
       // 记录操作成功
       await this.logOperationSuccess(auditId, context, result, Date.now() - startTime)
-      
+
       return result
-    } catch (error) {
+    }
+ catch (error) {
       // 记录操作失败
       await this.logOperationError(auditId, context, error, Date.now() - startTime)
-      
+
       throw error
     }
   }
-  
+
   private async logOperationStart(auditId: string, context: MiddlewareContext) {
     const logEntry = {
       auditId,
@@ -662,10 +668,10 @@ class AuditLogMiddleware implements MiddlewareHandler {
       userAgent: context.userAgent,
       status: 'started'
     }
-    
+
     await this.writeLog(logEntry)
   }
-  
+
   private async logOperationSuccess(auditId: string, context: MiddlewareContext, result: any, duration: number) {
     const logEntry = {
       auditId,
@@ -678,10 +684,10 @@ class AuditLogMiddleware implements MiddlewareHandler {
       duration,
       resultSize: result?.data?.byteLength || 0
     }
-    
+
     await this.writeLog(logEntry)
   }
-  
+
   private async logOperationError(auditId: string, context: MiddlewareContext, error: Error, duration: number) {
     const logEntry = {
       auditId,
@@ -695,32 +701,34 @@ class AuditLogMiddleware implements MiddlewareHandler {
       error: error.message,
       errorStack: error.stack
     }
-    
+
     await this.writeLog(logEntry)
   }
-  
+
   private async writeLog(logEntry: AuditLogEntry) {
     if (this.options.storage === 'database') {
       await this.writeToDatabase(logEntry)
-    } else if (this.options.storage === 'file') {
+    }
+ else if (this.options.storage === 'file') {
       await this.writeToFile(logEntry)
-    } else if (this.options.storage === 'remote') {
+    }
+ else if (this.options.storage === 'remote') {
       await this.writeToRemote(logEntry)
     }
   }
-  
+
   private generateAuditId(): string {
     return `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
-  
+
   private async writeToDatabase(logEntry: AuditLogEntry) {
     // 写入数据库实现
   }
-  
+
   private async writeToFile(logEntry: AuditLogEntry) {
     // 写入文件实现
   }
-  
+
   private async writeToRemote(logEntry: AuditLogEntry) {
     // 发送到远程服务实现
   }
@@ -732,10 +740,10 @@ class AuditLogMiddleware implements MiddlewareHandler {
 ### 注册和使用插件
 
 ```typescript
-import { createCrypto } from '@ldesign/crypto'
 import { ChaCha20Plugin } from './plugins/chacha20-plugin'
 import { HSMPlugin } from './plugins/hsm-plugin'
 import { AuditLogPlugin } from './plugins/audit-log-plugin'
+import { createCrypto } from '@ldesign/crypto'
 
 // 创建加密实例
 const crypto = createCrypto()

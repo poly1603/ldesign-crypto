@@ -11,33 +11,33 @@
 ```typescript
 interface CryptoInstance {
   // 初始化
-  init(options?: InitOptions): Promise<void>
-  
+  init: (options?: InitOptions) => Promise<void>
+
   // 对称加密
-  encrypt(data: CryptoData, options: EncryptOptions): Promise<EncryptResult>
-  decrypt(data: CryptoData, options: DecryptOptions): Promise<DecryptResult>
-  
+  encrypt: (data: CryptoData, options: EncryptOptions) => Promise<EncryptResult>
+  decrypt: (data: CryptoData, options: DecryptOptions) => Promise<DecryptResult>
+
   // 非对称加密
-  generateKeyPair(algorithm: AsymmetricAlgorithm, keySize: number): Promise<KeyPair>
-  publicKeyEncrypt(data: CryptoData, publicKey: PublicKey): Promise<EncryptResult>
-  privateKeyDecrypt(data: CryptoData, privateKey: PrivateKey): Promise<DecryptResult>
-  
+  generateKeyPair: (algorithm: AsymmetricAlgorithm, keySize: number) => Promise<KeyPair>
+  publicKeyEncrypt: (data: CryptoData, publicKey: PublicKey) => Promise<EncryptResult>
+  privateKeyDecrypt: (data: CryptoData, privateKey: PrivateKey) => Promise<DecryptResult>
+
   // 数字签名
-  sign(data: CryptoData, privateKey: PrivateKey, algorithm: SignatureAlgorithm): Promise<Signature>
-  verify(signature: Signature, data: CryptoData, publicKey: PublicKey, algorithm: SignatureAlgorithm): Promise<boolean>
-  
+  sign: (data: CryptoData, privateKey: PrivateKey, algorithm: SignatureAlgorithm) => Promise<Signature>
+  verify: (signature: Signature, data: CryptoData, publicKey: PublicKey, algorithm: SignatureAlgorithm) => Promise<boolean>
+
   // 哈希
-  hash(data: CryptoData, algorithm: HashAlgorithm): Promise<string>
-  hmac(data: CryptoData, key: CryptoKey, algorithm: HashAlgorithm): Promise<string>
-  
+  hash: (data: CryptoData, algorithm: HashAlgorithm) => Promise<string>
+  hmac: (data: CryptoData, key: CryptoKey, algorithm: HashAlgorithm) => Promise<string>
+
   // 密钥管理
-  generateKey(algorithm: SymmetricAlgorithm, keySize: number): CryptoKey
-  deriveKey(password: string, salt: CryptoData, options: KeyDerivationOptions): Promise<CryptoKey>
-  
+  generateKey: (algorithm: SymmetricAlgorithm, keySize: number) => CryptoKey
+  deriveKey: (password: string, salt: CryptoData, options: KeyDerivationOptions) => Promise<CryptoKey>
+
   // 工具方法
-  getRandomBytes(length: number): Uint8Array
-  encode(data: CryptoData, encoding: Encoding): string
-  decode(data: string, encoding: Encoding): Uint8Array
+  getRandomBytes: (length: number) => Uint8Array
+  encode: (data: CryptoData, encoding: Encoding) => string
+  decode: (data: string, encoding: Encoding) => Uint8Array
 }
 ```
 
@@ -91,14 +91,14 @@ interface Signature {
 ### 对称加密算法
 
 ```typescript
-type SymmetricAlgorithm = 
+type SymmetricAlgorithm =
   | 'AES'
   | 'DES'
   | '3DES'
   | 'ChaCha20'
   | 'SM4'
 
-type SymmetricMode = 
+type SymmetricMode =
   | 'ECB'
   | 'CBC'
   | 'CFB'
@@ -107,7 +107,7 @@ type SymmetricMode =
   | 'GCM'
   | 'CCM'
 
-type PaddingMode = 
+type PaddingMode =
   | 'PKCS7'
   | 'PKCS5'
   | 'ZERO'
@@ -119,7 +119,7 @@ type PaddingMode =
 ### 非对称加密算法
 
 ```typescript
-type AsymmetricAlgorithm = 
+type AsymmetricAlgorithm =
   | 'RSA'
   | 'ECC'
   | 'ECDH'
@@ -127,14 +127,14 @@ type AsymmetricAlgorithm =
   | 'SM2'
   | 'SM9'
 
-type ECCCurve = 
+type ECCCurve =
   | 'P-256'
   | 'P-384'
   | 'P-521'
   | 'secp256k1'
   | 'sm2p256v1'
 
-type RSAPadding = 
+type RSAPadding =
   | 'PKCS1'
   | 'OAEP'
   | 'PSS'
@@ -144,7 +144,7 @@ type RSAPadding =
 ### 哈希算法
 
 ```typescript
-type HashAlgorithm = 
+type HashAlgorithm =
   | 'SHA-1'
   | 'SHA-256'
   | 'SHA-384'
@@ -155,7 +155,7 @@ type HashAlgorithm =
   | 'BLAKE2b'
   | 'BLAKE2s'
 
-type SignatureAlgorithm = 
+type SignatureAlgorithm =
   | 'RSA-PSS'
   | 'RSA-PKCS1'
   | 'ECDSA'
@@ -321,13 +321,13 @@ interface ProviderConfig {
     algorithms?: string[]
     optimization?: 'speed' | 'size' | 'balanced'
   }
-  
+
   // 硬件提供者
   hardware?: {
     device?: string
     authentication?: AuthenticationConfig
   }
-  
+
   // 云提供者
   cloud?: {
     endpoint: string
@@ -400,11 +400,11 @@ interface MemoryUsage {
 class CryptoError extends Error {
   code: ErrorCode
   details?: ErrorDetails
-  
+
   constructor(message: string, code: ErrorCode, details?: ErrorDetails)
 }
 
-type ErrorCode = 
+type ErrorCode =
   | 'ALGORITHM_NOT_SUPPORTED'
   | 'INVALID_KEY'
   | 'INVALID_PARAMETER'
@@ -452,14 +452,14 @@ function assertInitialized(instance: CryptoInstance): asserts instance is Initia
 
 ```typescript
 // 根据算法类型推断选项类型
-type AlgorithmOptions<T extends string> = 
+type AlgorithmOptions<T extends string> =
   T extends SymmetricAlgorithm ? EncryptOptions :
   T extends AsymmetricAlgorithm ? AsymmetricEncryptOptions :
   T extends HashAlgorithm ? HashOptions :
   never
 
 // 根据操作类型推断结果类型
-type OperationResult<T extends string> = 
+type OperationResult<T extends string> =
   T extends 'encrypt' ? EncryptResult :
   T extends 'decrypt' ? DecryptResult :
   T extends 'sign' ? SignResult :
@@ -468,7 +468,7 @@ type OperationResult<T extends string> =
   never
 
 // 提取算法支持的模式
-type SupportedModes<T extends SymmetricAlgorithm> = 
+type SupportedModes<T extends SymmetricAlgorithm> =
   T extends 'AES' ? 'ECB' | 'CBC' | 'CFB' | 'OFB' | 'CTR' | 'GCM' | 'CCM' :
   T extends 'DES' ? 'ECB' | 'CBC' | 'CFB' | 'OFB' :
   T extends 'SM4' ? 'ECB' | 'CBC' | 'CFB' | 'OFB' | 'CTR' :
@@ -493,7 +493,7 @@ type ExtractParameters<T> = T extends (...args: infer P) => any ? P : never
 type ExtractReturnType<T> = T extends (...args: any[]) => infer R ? R : never
 
 // 创建联合类型的映射
-type UnionToIntersection<U> = 
+type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
 ```
 
@@ -506,7 +506,7 @@ declare global {
   interface Window {
     LDesignCrypto?: CryptoInstance
   }
-  
+
   namespace LDesignCrypto {
     interface Config extends InitOptions {}
     interface Plugin extends PluginInterface {}
@@ -519,7 +519,7 @@ declare module '@ldesign/crypto' {
     // 允许插件扩展实例
     [key: string]: any
   }
-  
+
   export interface PluginInterface {
     name: string
     version: string

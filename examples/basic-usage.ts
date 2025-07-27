@@ -12,7 +12,7 @@ async function basicUsageExample() {
   const crypto = createCrypto({
     debug: true,
     performance: { enabled: true },
-    cache: { enabled: true }
+    cache: { enabled: true },
   })
 
   // 初始化
@@ -33,7 +33,7 @@ async function basicUsageExample() {
     const aesConfig = {
       key: aesKey,
       mode: 'CBC' as const,
-      padding: 'PKCS7' as const
+      padding: 'PKCS7' as const,
     }
 
     const aesEncrypted = await crypto.aesEncrypt(testData, aesConfig)
@@ -93,14 +93,14 @@ async function basicUsageExample() {
     console.log('\n🔒 SM2加密解密:')
     const sm2Data = 'SM2加密测试数据'
     const sm2Encrypted = await crypto.sm2Encrypt(sm2Data, {
-      publicKey: sm2KeyPair.publicKey
+      publicKey: sm2KeyPair.publicKey,
     })
 
     if (sm2Encrypted.success) {
       console.log(`SM2加密结果: ${sm2Encrypted.data?.substring(0, 100)}...`)
 
       const sm2Decrypted = await crypto.sm2Decrypt(sm2Encrypted.data!, {
-        privateKey: sm2KeyPair.privateKey
+        privateKey: sm2KeyPair.privateKey,
       })
 
       if (sm2Decrypted.success) {
@@ -152,7 +152,7 @@ async function basicUsageExample() {
       password: 'mypassword',
       salt: 'mysalt',
       iterations: 10000,
-      keyLength: 32
+      keyLength: 32,
     })
 
     if (derivedKey.success) {
@@ -184,13 +184,14 @@ async function basicUsageExample() {
     // 插件信息
     const plugins = crypto.getPluginInfo()
     console.log('\n已加载的插件:')
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
       console.log(`  ${plugin.name}: ${plugin.algorithms.join(', ')}`)
     })
-
-  } catch (error) {
+  }
+ catch (error) {
     console.error('❌ 示例执行失败:', error)
-  } finally {
+  }
+ finally {
     // 清理资源
     await crypto.destroy()
     console.log('\n🎉 示例执行完成!')

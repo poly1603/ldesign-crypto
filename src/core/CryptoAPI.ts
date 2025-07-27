@@ -3,26 +3,26 @@
  * 提供简单易用的加密接口
  */
 
-import { CryptoManager } from './CryptoManager'
 import { SymmetricCrypto, SymmetricPlugin } from '../algorithms/symmetric'
-import { RSACrypto, ECCCrypto, AsymmetricPlugin } from '../algorithms/asymmetric'
+import { AsymmetricPlugin, RSACrypto } from '../algorithms/asymmetric'
 import { HashCrypto, HashPlugin } from '../algorithms/hash'
 import { SM2Crypto, SM3Crypto, SM4Crypto, SMPlugin } from '../algorithms/sm'
 import type {
-  CryptoManagerConfig,
-  SymmetricConfig,
   AsymmetricConfig,
+  CryptoManagerConfig,
+  CryptoResult,
   HashConfig,
+  KeyDerivationConfig,
+  KeyPair,
+  RandomConfig,
   SM2Config,
   SM4Config,
-  CryptoResult,
-  KeyPair,
   SignatureResult,
+  SymmetricConfig,
   VerifyResult,
-  RandomConfig,
-  KeyDerivationConfig
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
+import { CryptoManager } from './CryptoManager'
 
 /**
  * 统一加密API类
@@ -55,7 +55,7 @@ export class CryptoAPI extends CryptoManager {
       'aes_encrypt',
       'AES',
       () => SymmetricCrypto.encrypt(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -67,7 +67,7 @@ export class CryptoAPI extends CryptoManager {
       'aes_decrypt',
       'AES',
       () => SymmetricCrypto.decrypt(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -79,7 +79,7 @@ export class CryptoAPI extends CryptoManager {
       'des_encrypt',
       'DES',
       () => SymmetricCrypto.encryptDES(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -91,7 +91,7 @@ export class CryptoAPI extends CryptoManager {
       'des_decrypt',
       'DES',
       () => SymmetricCrypto.decryptDES(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -103,7 +103,7 @@ export class CryptoAPI extends CryptoManager {
       '3des_encrypt',
       '3DES',
       () => SymmetricCrypto.encrypt3DES(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -115,7 +115,7 @@ export class CryptoAPI extends CryptoManager {
       '3des_decrypt',
       '3DES',
       () => SymmetricCrypto.decrypt3DES(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -127,12 +127,13 @@ export class CryptoAPI extends CryptoManager {
   async generateRSAKeyPair(keySize: number = 2048): Promise<KeyPair> {
     try {
       return RSACrypto.generateKeyPair(keySize)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `RSA key generation failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -145,7 +146,7 @@ export class CryptoAPI extends CryptoManager {
       'rsa_encrypt',
       'RSA',
       () => RSACrypto.encrypt(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -157,7 +158,7 @@ export class CryptoAPI extends CryptoManager {
       'rsa_decrypt',
       'RSA',
       () => RSACrypto.decrypt(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -167,12 +168,13 @@ export class CryptoAPI extends CryptoManager {
   async rsaSign(data: string, config: AsymmetricConfig): Promise<SignatureResult> {
     try {
       return RSACrypto.sign(data, config)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.SIGNATURE_FAILED,
         `RSA signing failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -183,10 +185,11 @@ export class CryptoAPI extends CryptoManager {
   async rsaVerify(data: string, signature: string, config: AsymmetricConfig): Promise<VerifyResult> {
     try {
       return RSACrypto.verify(data, signature, config)
-    } catch (error) {
+    }
+ catch (error) {
       return {
         valid: false,
-        error: `RSA verification failed: ${error}`
+        error: `RSA verification failed: ${error}`,
       }
     }
   }
@@ -201,7 +204,7 @@ export class CryptoAPI extends CryptoManager {
       'md5',
       'MD5',
       () => HashCrypto.md5(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -213,7 +216,7 @@ export class CryptoAPI extends CryptoManager {
       'sha1',
       'SHA1',
       () => HashCrypto.sha1(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -225,7 +228,7 @@ export class CryptoAPI extends CryptoManager {
       'sha256',
       'SHA256',
       () => HashCrypto.sha256(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -237,7 +240,7 @@ export class CryptoAPI extends CryptoManager {
       'sha512',
       'SHA512',
       () => HashCrypto.sha512(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -249,7 +252,7 @@ export class CryptoAPI extends CryptoManager {
       'pbkdf2',
       'SHA256',
       () => HashCrypto.pbkdf2(config),
-      { config }
+      { config },
     )
   }
 
@@ -261,12 +264,13 @@ export class CryptoAPI extends CryptoManager {
   async generateSM2KeyPair(): Promise<KeyPair> {
     try {
       return SM2Crypto.generateKeyPair()
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `SM2 key generation failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -279,7 +283,7 @@ export class CryptoAPI extends CryptoManager {
       'sm2_encrypt',
       'SM2',
       () => SM2Crypto.encrypt(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -291,7 +295,7 @@ export class CryptoAPI extends CryptoManager {
       'sm2_decrypt',
       'SM2',
       () => SM2Crypto.decrypt(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -301,12 +305,13 @@ export class CryptoAPI extends CryptoManager {
   async sm2Sign(data: string, config: SM2Config): Promise<SignatureResult> {
     try {
       return SM2Crypto.sign(data, config)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.SIGNATURE_FAILED,
         `SM2 signing failed: ${error}`,
         'SM2',
-        error
+        error,
       )
     }
   }
@@ -317,10 +322,11 @@ export class CryptoAPI extends CryptoManager {
   async sm2Verify(data: string, signature: string, config: SM2Config): Promise<VerifyResult> {
     try {
       return SM2Crypto.verify(data, signature, config)
-    } catch (error) {
+    }
+ catch (error) {
       return {
         valid: false,
-        error: `SM2 verification failed: ${error}`
+        error: `SM2 verification failed: ${error}`,
       }
     }
   }
@@ -333,7 +339,7 @@ export class CryptoAPI extends CryptoManager {
       'sm3',
       'SM3',
       () => SM3Crypto.hash(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -345,7 +351,7 @@ export class CryptoAPI extends CryptoManager {
       'sm4_encrypt',
       'SM4',
       () => SM4Crypto.encrypt(data, config),
-      { data, config }
+      { data, config },
     )
   }
 
@@ -357,7 +363,7 @@ export class CryptoAPI extends CryptoManager {
       'sm4_decrypt',
       'SM4',
       () => SM4Crypto.decrypt(encryptedData, config),
-      { encryptedData, config }
+      { encryptedData, config },
     )
   }
 
@@ -368,7 +374,7 @@ export class CryptoAPI extends CryptoManager {
    */
   generateRandom(config: RandomConfig): string {
     const { length, charset = 'hex', includeSymbols = false } = config
-    
+
     let chars = ''
     switch (charset) {
       case 'hex':

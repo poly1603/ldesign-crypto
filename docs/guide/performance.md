@@ -11,9 +11,9 @@ import { createCrypto } from '@ldesign/crypto'
 
 const crypto = createCrypto({
   performance: {
-    enabled: true,        // 启用性能监控
-    detailed: true,       // 详细监控信息
-    threshold: 100        // 性能阈值(ms)，超过会发出警告
+    enabled: true, // 启用性能监控
+    detailed: true, // 详细监控信息
+    threshold: 100 // 性能阈值(ms)，超过会发出警告
   }
 })
 
@@ -28,18 +28,18 @@ const crypto = createCrypto({
     enabled: true,
     detailed: true,
     threshold: 100,
-    
+
     // 自定义监控选项
-    trackMemory: true,           // 监控内存使用
-    trackCPU: true,             // 监控CPU使用
-    sampleRate: 1.0,            // 采样率 (0.0-1.0)
-    maxRecords: 1000,           // 最大记录数
-    
+    trackMemory: true, // 监控内存使用
+    trackCPU: true, // 监控CPU使用
+    sampleRate: 1.0, // 采样率 (0.0-1.0)
+    maxRecords: 1000, // 最大记录数
+
     // 回调函数
     onSlowOperation: (metrics) => {
       console.warn('慢操作检测:', metrics)
     },
-    
+
     onError: (error) => {
       console.error('性能监控错误:', error)
     }
@@ -76,7 +76,7 @@ console.log('性能指标:', {
 // 获取详细的操作记录
 const records = crypto.getPerformanceRecords()
 
-records.forEach(record => {
+records.forEach((record) => {
   console.log(`${record.operation}: ${record.duration}ms`, {
     algorithm: record.algorithm,
     dataSize: record.dataSize,
@@ -97,22 +97,22 @@ class PerformanceAnalyzer {
     this.crypto = crypto
     this.results = new Map()
   }
-  
+
   async benchmarkSymmetric() {
     const testData = 'A'.repeat(1024 * 1024) // 1MB数据
     const iterations = 100
-    
+
     const algorithms = [
       { name: 'AES-128-CBC', key: this.crypto.generateKey('AES', 128) },
       { name: 'AES-256-CBC', key: this.crypto.generateKey('AES', 256) },
       { name: 'AES-256-GCM', key: this.crypto.generateKey('AES', 256) }
     ]
-    
+
     for (const alg of algorithms) {
       console.log(`测试 ${alg.name}...`)
-      
+
       const startTime = performance.now()
-      
+
       for (let i = 0; i < iterations; i++) {
         const mode = alg.name.includes('GCM') ? 'GCM' : 'CBC'
         await this.crypto.aesEncrypt(testData, {
@@ -120,33 +120,33 @@ class PerformanceAnalyzer {
           mode
         })
       }
-      
+
       const endTime = performance.now()
       const totalTime = endTime - startTime
       const avgTime = totalTime / iterations
       const throughput = (testData.length * iterations) / (totalTime / 1000) / 1024 / 1024
-      
+
       this.results.set(alg.name, {
         totalTime,
         avgTime,
-        throughput: throughput.toFixed(2) + ' MB/s'
+        throughput: `${throughput.toFixed(2)} MB/s`
       })
     }
-    
+
     return this.results
   }
-  
+
   async benchmarkHash() {
     const testData = 'A'.repeat(1024 * 1024) // 1MB数据
     const iterations = 1000
-    
+
     const algorithms = ['SHA-256', 'SHA-512', 'MD5', 'SM3']
-    
+
     for (const alg of algorithms) {
       console.log(`测试 ${alg}...`)
-      
+
       const startTime = performance.now()
-      
+
       for (let i = 0; i < iterations; i++) {
         switch (alg) {
           case 'SHA-256':
@@ -163,22 +163,22 @@ class PerformanceAnalyzer {
             break
         }
       }
-      
+
       const endTime = performance.now()
       const totalTime = endTime - startTime
       const avgTime = totalTime / iterations
       const throughput = (testData.length * iterations) / (totalTime / 1000) / 1024 / 1024
-      
+
       this.results.set(alg, {
         totalTime,
         avgTime,
-        throughput: throughput.toFixed(2) + ' MB/s'
+        throughput: `${throughput.toFixed(2)} MB/s`
       })
     }
-    
+
     return this.results
   }
-  
+
   printResults() {
     console.table(Object.fromEntries(this.results))
   }
@@ -199,7 +199,7 @@ class MemoryMonitor {
     this.crypto = crypto
     this.snapshots = []
   }
-  
+
   takeSnapshot(label) {
     if (performance.memory) {
       this.snapshots.push({
@@ -211,19 +211,19 @@ class MemoryMonitor {
       })
     }
   }
-  
+
   async monitorOperation(operation, ...args) {
     this.takeSnapshot('before')
-    
+
     const startTime = performance.now()
     const result = await operation(...args)
     const endTime = performance.now()
-    
+
     this.takeSnapshot('after')
-    
+
     const before = this.snapshots[this.snapshots.length - 2]
     const after = this.snapshots[this.snapshots.length - 1]
-    
+
     return {
       result,
       duration: endTime - startTime,
@@ -235,7 +235,7 @@ class MemoryMonitor {
       }
     }
   }
-  
+
   getMemoryReport() {
     return this.snapshots.map((snapshot, index) => ({
       ...snapshot,
@@ -267,10 +267,12 @@ function selectOptimalAlgorithm(dataSize) {
   if (dataSize < 1024) {
     // 小数据：选择启动开销小的算法
     return { algorithm: 'AES', keySize: 128, mode: 'ECB' }
-  } else if (dataSize < 1024 * 1024) {
+  }
+ else if (dataSize < 1024 * 1024) {
     // 中等数据：平衡安全性和性能
     return { algorithm: 'AES', keySize: 256, mode: 'CBC' }
-  } else {
+  }
+ else {
     // 大数据：选择高性能模式
     return { algorithm: 'AES', keySize: 256, mode: 'CTR' }
   }
@@ -289,23 +291,23 @@ const encrypted = await crypto.aesEncrypt(data, config)
 async function optimizedBatchEncrypt(dataList, key) {
   const batchSize = 10 // 批次大小
   const results = []
-  
+
   for (let i = 0; i < dataList.length; i += batchSize) {
     const batch = dataList.slice(i, i + batchSize)
-    
+
     // 并行处理批次内的数据
     const batchResults = await Promise.all(
       batch.map(data => crypto.aesEncrypt(data, { key, mode: 'CBC' }))
     )
-    
+
     results.push(...batchResults)
-    
+
     // 避免阻塞主线程
     if (i % (batchSize * 10) === 0) {
       await new Promise(resolve => setTimeout(resolve, 0))
     }
   }
-  
+
   return results
 }
 ```
@@ -320,7 +322,7 @@ class PerformanceCache {
     this.ttl = ttl
     this.accessTimes = new Map()
   }
-  
+
   set(key, value) {
     // LRU淘汰策略
     if (this.cache.size >= this.maxSize) {
@@ -328,49 +330,50 @@ class PerformanceCache {
       this.cache.delete(oldestKey)
       this.accessTimes.delete(oldestKey)
     }
-    
+
     this.cache.set(key, {
       value,
       timestamp: Date.now()
     })
     this.accessTimes.set(key, Date.now())
   }
-  
+
   get(key) {
     const item = this.cache.get(key)
-    if (!item) return null
-    
+    if (!item)
+return null
+
     // 检查过期
     if (Date.now() - item.timestamp > this.ttl) {
       this.cache.delete(key)
       this.accessTimes.delete(key)
       return null
     }
-    
+
     // 更新访问时间
     this.accessTimes.set(key, Date.now())
     return item.value
   }
-  
+
   findOldestKey() {
     let oldestKey = null
     let oldestTime = Infinity
-    
+
     for (const [key, time] of this.accessTimes) {
       if (time < oldestTime) {
         oldestTime = time
         oldestKey = key
       }
     }
-    
+
     return oldestKey
   }
-  
+
   clear() {
     this.cache.clear()
     this.accessTimes.clear()
   }
-  
+
   getStats() {
     return {
       size: this.cache.size,
@@ -387,15 +390,15 @@ class PerformanceCache {
 
 ```typescript
 // crypto-worker.js
-self.onmessage = async function(e) {
+self.onmessage = async function (e) {
   const { id, operation, data, options } = e.data
-  
+
   try {
     // 动态导入加密库
     const { createCrypto } = await import('@ldesign/crypto')
     const crypto = createCrypto({ performance: { enabled: true } })
     await crypto.init()
-    
+
     let result
     switch (operation) {
       case 'aesEncrypt':
@@ -409,14 +412,15 @@ self.onmessage = async function(e) {
         break
       // 添加更多操作...
     }
-    
+
     self.postMessage({
       id,
       success: true,
       result,
       metrics: crypto.getPerformanceMetrics()
     })
-  } catch (error) {
+  }
+ catch (error) {
     self.postMessage({
       id,
       success: false,
@@ -434,26 +438,27 @@ class WorkerCrypto {
     this.pendingOperations = new Map()
     this.worker.onmessage = this.handleMessage.bind(this)
   }
-  
+
   handleMessage(e) {
     const { id, success, result, error, metrics } = e.data
     const { resolve, reject } = this.pendingOperations.get(id)
-    
+
     if (success) {
       resolve({ result, metrics })
-    } else {
+    }
+ else {
       reject(new Error(error))
     }
-    
+
     this.pendingOperations.delete(id)
   }
-  
+
   async encrypt(data, options) {
     const id = Date.now() + Math.random()
-    
+
     return new Promise((resolve, reject) => {
       this.pendingOperations.set(id, { resolve, reject })
-      
+
       this.worker.postMessage({
         id,
         operation: 'aesEncrypt',
@@ -477,67 +482,8 @@ const { result, metrics } = await workerCrypto.encrypt('large data', {
 ### 实时监控组件
 
 ```vue
-<template>
-  <div class="performance-dashboard">
-    <h2>性能监控仪表板</h2>
-    
-    <!-- 实时指标 -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <h3>总操作数</h3>
-        <div class="metric-value">{{ metrics.totalOperations }}</div>
-      </div>
-      
-      <div class="metric-card">
-        <h3>平均耗时</h3>
-        <div class="metric-value">{{ metrics.averageTime }}ms</div>
-      </div>
-      
-      <div class="metric-card">
-        <h3>吞吐量</h3>
-        <div class="metric-value">{{ metrics.throughput }} ops/s</div>
-      </div>
-      
-      <div class="metric-card">
-        <h3>内存使用</h3>
-        <div class="metric-value">{{ formatBytes(metrics.memoryUsage) }}</div>
-      </div>
-    </div>
-    
-    <!-- 性能图表 -->
-    <div class="charts-section">
-      <canvas ref="performanceChart" width="800" height="400"></canvas>
-    </div>
-    
-    <!-- 操作历史 -->
-    <div class="history-section">
-      <h3>最近操作</h3>
-      <table class="operations-table">
-        <thead>
-          <tr>
-            <th>时间</th>
-            <th>操作</th>
-            <th>算法</th>
-            <th>耗时</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="op in recentOperations" :key="op.id">
-            <td>{{ formatTime(op.timestamp) }}</td>
-            <td>{{ op.operation }}</td>
-            <td>{{ op.algorithm }}</td>
-            <td>{{ op.duration }}ms</td>
-            <td :class="op.status">{{ op.status }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const metrics = ref({
   totalOperations: 0,
@@ -563,34 +509,104 @@ onUnmounted(() => {
   }
 })
 
-const updateMetrics = () => {
+function updateMetrics() {
   // 从crypto实例获取最新指标
   const latest = crypto.getPerformanceMetrics()
   metrics.value = latest
-  
+
   // 更新操作历史
   const records = crypto.getPerformanceRecords()
   recentOperations.value = records.slice(-10).reverse()
 }
 
-const formatBytes = (bytes) => {
-  if (bytes === 0) return '0 B'
+function formatBytes(bytes) {
+  if (bytes === 0)
+return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
-const formatTime = (timestamp) => {
+function formatTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString()
 }
 
-const initChart = () => {
+function initChart() {
   // 初始化性能图表
   const ctx = performanceChart.value.getContext('2d')
   // 使用Chart.js或其他图表库绘制性能趋势图
 }
 </script>
+
+<template>
+  <div class="performance-dashboard">
+    <h2>性能监控仪表板</h2>
+
+    <!-- 实时指标 -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h3>总操作数</h3>
+        <div class="metric-value">
+          {{ metrics.totalOperations }}
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <h3>平均耗时</h3>
+        <div class="metric-value">
+          {{ metrics.averageTime }}ms
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <h3>吞吐量</h3>
+        <div class="metric-value">
+          {{ metrics.throughput }} ops/s
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <h3>内存使用</h3>
+        <div class="metric-value">
+          {{ formatBytes(metrics.memoryUsage) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 性能图表 -->
+    <div class="charts-section">
+      <canvas ref="performanceChart" width="800" height="400" />
+    </div>
+
+    <!-- 操作历史 -->
+    <div class="history-section">
+      <h3>最近操作</h3>
+      <table class="operations-table">
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>操作</th>
+            <th>算法</th>
+            <th>耗时</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="op in recentOperations" :key="op.id">
+            <td>{{ formatTime(op.timestamp) }}</td>
+            <td>{{ op.operation }}</td>
+            <td>{{ op.algorithm }}</td>
+            <td>{{ op.duration }}ms</td>
+            <td :class="op.status">
+              {{ op.status }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .performance-dashboard {

@@ -12,7 +12,7 @@ export default defineConfig({
     ['meta', { name: 'og:title', content: '@ldesign/crypto | 加密模块' }],
     ['meta', { name: 'og:site_name', content: '@ldesign/crypto' }],
     ['meta', { name: 'og:image', content: '/og-image.png' }],
-    ['meta', { name: 'og:url', content: 'https://ldesign.com/crypto/' }]
+    ['meta', { name: 'og:url', content: 'https://ldesign.com/crypto/' }],
   ],
 
   themeConfig: {
@@ -28,9 +28,9 @@ export default defineConfig({
         items: [
           { text: '更新日志', link: '/changelog' },
           { text: '贡献指南', link: '/contributing' },
-          { text: 'GitHub', link: 'https://github.com/ldesign/crypto' }
-        ]
-      }
+          { text: 'GitHub', link: 'https://github.com/ldesign/crypto' },
+        ],
+      },
     ],
 
     sidebar: {
@@ -40,8 +40,8 @@ export default defineConfig({
           items: [
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '安装配置', link: '/guide/installation' },
-            { text: '基础概念', link: '/guide/concepts' }
-          ]
+            { text: '基础概念', link: '/guide/concepts' },
+          ],
         },
         {
           text: '加密算法',
@@ -49,15 +49,15 @@ export default defineConfig({
             { text: '对称加密', link: '/guide/symmetric' },
             { text: '非对称加密', link: '/guide/asymmetric' },
             { text: '哈希算法', link: '/guide/hash' },
-            { text: '国密算法', link: '/guide/sm-crypto' }
-          ]
+            { text: '国密算法', link: '/guide/sm-crypto' },
+          ],
         },
         {
           text: '框架集成',
           items: [
             { text: 'Vue 3集成', link: '/guide/vue-integration' },
-            { text: '通用JavaScript', link: '/guide/vanilla-js' }
-          ]
+            { text: '通用JavaScript', link: '/guide/vanilla-js' },
+          ],
         },
         {
           text: '高级功能',
@@ -66,9 +66,9 @@ export default defineConfig({
             { text: '性能监控', link: '/guide/performance' },
             { text: '缓存机制', link: '/guide/caching' },
             { text: '插件开发', link: '/guide/plugin-development' },
-            { text: '错误处理', link: '/guide/error-handling' }
-          ]
-        }
+            { text: '错误处理', link: '/guide/error-handling' },
+          ],
+        },
       ],
       '/api/': [
         {
@@ -79,9 +79,9 @@ export default defineConfig({
             { text: '哈希算法', link: '/api/hash' },
             { text: '国密算法', link: '/api/sm-crypto' },
             { text: 'Vue组合式API', link: '/api/vue-composables' },
-            { text: '类型定义', link: '/api/types' }
-          ]
-        }
+            { text: '类型定义', link: '/api/types' },
+          ],
+        },
       ],
       '/demo/': [
         {
@@ -89,70 +89,70 @@ export default defineConfig({
           items: [
             { text: '加密演练场', link: '/demo/playground' },
             { text: '对称加密演示', link: '/demo/symmetric' },
-            { text: '国密算法演示', link: '/demo/sm-crypto' }
-          ]
-        }
+            { text: '国密算法演示', link: '/demo/sm-crypto' },
+          ],
+        },
       ],
       '/examples/': [
         {
           text: '代码示例',
           items: [
             { text: '基础使用', link: '/examples/basic-usage' },
-            { text: 'Vue组件', link: '/examples/vue-component' }
-          ]
-        }
-      ]
+            { text: 'Vue组件', link: '/examples/vue-component' },
+          ],
+        },
+      ],
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/ldesign/crypto' }
+      { icon: 'github', link: 'https://github.com/ldesign/crypto' },
     ],
 
     footer: {
       message: '基于 MIT 许可证发布',
-      copyright: 'Copyright © 2024 LDesign Team'
+      copyright: 'Copyright © 2024 LDesign Team',
     },
 
     editLink: {
       pattern: 'https://github.com/ldesign/crypto/edit/main/docs/:path',
-      text: '在 GitHub 上编辑此页'
+      text: '在 GitHub 上编辑此页',
     },
 
     lastUpdated: {
       text: '最后更新于',
       formatOptions: {
         dateStyle: 'short',
-        timeStyle: 'medium'
-      }
+        timeStyle: 'medium',
+      },
     },
 
     docFooter: {
       prev: '上一页',
-      next: '下一页'
+      next: '下一页',
     },
 
     outline: {
-      label: '页面导航'
+      label: '页面导航',
     },
 
     returnToTopLabel: '回到顶部',
     sidebarMenuLabel: '菜单',
     darkModeSwitchLabel: '主题',
     lightModeSwitchTitle: '切换到浅色模式',
-    darkModeSwitchTitle: '切换到深色模式'
+    darkModeSwitchTitle: '切换到深色模式',
   },
 
   markdown: {
     theme: {
       light: 'github-light',
-      dark: 'github-dark'
+      dark: 'github-dark',
     },
-    lineNumbers: true
+    lineNumbers: true,
   },
 
   vite: {
     define: {
-      __VUE_OPTIONS_API__: false
-    }
-  }
+      __VUE_OPTIONS_API__: false,
+    },
+  },
 })

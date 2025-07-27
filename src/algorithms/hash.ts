@@ -5,10 +5,10 @@
 
 import CryptoJS from 'crypto-js'
 import type {
-  HashConfig,
   CryptoPlugin,
   EncodingFormat,
-  KeyDerivationConfig
+  HashConfig,
+  KeyDerivationConfig,
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
 
@@ -24,19 +24,20 @@ export class HashCrypto {
       const {
         salt = '',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const input = salt ? data + salt : data
       const hash = CryptoJS.MD5(input)
 
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `MD5 hashing failed: ${error}`,
         'MD5',
-        error
+        error,
       )
     }
   }
@@ -49,19 +50,20 @@ export class HashCrypto {
       const {
         salt = '',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const input = salt ? data + salt : data
       const hash = CryptoJS.SHA1(input)
 
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SHA1 hashing failed: ${error}`,
         'SHA1',
-        error
+        error,
       )
     }
   }
@@ -74,19 +76,20 @@ export class HashCrypto {
       const {
         salt = '',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const input = salt ? data + salt : data
       const hash = CryptoJS.SHA256(input)
 
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SHA256 hashing failed: ${error}`,
         'SHA256',
-        error
+        error,
       )
     }
   }
@@ -99,19 +102,20 @@ export class HashCrypto {
       const {
         salt = '',
         inputEncoding = 'utf8',
-        outputEncoding = 'hex'
+        outputEncoding = 'hex',
       } = config
 
       const input = salt ? data + salt : data
       const hash = CryptoJS.SHA512(input)
 
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `SHA512 hashing failed: ${error}`,
         'SHA512',
-        error
+        error,
       )
     }
   }
@@ -124,12 +128,13 @@ export class HashCrypto {
       const { outputEncoding = 'hex' } = config
       const hash = CryptoJS.HmacMD5(data, key)
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `HMAC-MD5 failed: ${error}`,
         'MD5',
-        error
+        error,
       )
     }
   }
@@ -142,12 +147,13 @@ export class HashCrypto {
       const { outputEncoding = 'hex' } = config
       const hash = CryptoJS.HmacSHA1(data, key)
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `HMAC-SHA1 failed: ${error}`,
         'SHA1',
-        error
+        error,
       )
     }
   }
@@ -160,12 +166,13 @@ export class HashCrypto {
       const { outputEncoding = 'hex' } = config
       const hash = CryptoJS.HmacSHA256(data, key)
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `HMAC-SHA256 failed: ${error}`,
         'SHA256',
-        error
+        error,
       )
     }
   }
@@ -178,12 +185,13 @@ export class HashCrypto {
       const { outputEncoding = 'hex' } = config
       const hash = CryptoJS.HmacSHA512(data, key)
       return this.formatOutput(hash, outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `HMAC-SHA512 failed: ${error}`,
         'SHA512',
-        error
+        error,
       )
     }
   }
@@ -198,7 +206,7 @@ export class HashCrypto {
         salt,
         iterations = 10000,
         keyLength = 32,
-        hashAlgorithm = 'SHA256'
+        hashAlgorithm = 'SHA256',
       } = config
 
       let hash: any
@@ -219,16 +227,17 @@ export class HashCrypto {
       const key = CryptoJS.PBKDF2(password, salt, {
         keySize: keyLength / 4, // CryptoJS使用32位字为单位
         iterations,
-        hasher: hash
+        hasher: hash,
       })
 
       return key.toString(CryptoJS.enc.Hex)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `PBKDF2 key derivation failed: ${error}`,
         'SHA256',
-        error
+        error,
       )
     }
   }
@@ -239,7 +248,7 @@ export class HashCrypto {
   static async hashFile(
     file: File | Blob,
     algorithm: 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' = 'SHA256',
-    chunkSize: number = 1024 * 1024 // 1MB
+    chunkSize: number = 1024 * 1024, // 1MB
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       try {
@@ -289,17 +298,18 @@ export class HashCrypto {
           reject(new CryptoError(
             CryptoErrorType.ENCRYPTION_FAILED,
             'File reading failed during hashing',
-            algorithm
+            algorithm,
           ))
         }
 
         readNextChunk()
-      } catch (error) {
+      }
+ catch (error) {
         reject(new CryptoError(
           CryptoErrorType.ENCRYPTION_FAILED,
           `File hashing failed: ${error}`,
           algorithm,
-          error
+          error,
         ))
       }
     })
@@ -312,7 +322,7 @@ export class HashCrypto {
     data: string,
     expectedHash: string,
     algorithm: 'MD5' | 'SHA1' | 'SHA256' | 'SHA512',
-    config: HashConfig = {}
+    config: HashConfig = {},
   ): boolean {
     try {
       let actualHash: string
@@ -335,12 +345,13 @@ export class HashCrypto {
       }
 
       return actualHash.toLowerCase() === expectedHash.toLowerCase()
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.VERIFICATION_FAILED,
         `Hash verification failed: ${error}`,
         algorithm,
-        error
+        error,
       )
     }
   }
@@ -388,37 +399,48 @@ export class PasswordStrength {
     const suggestions: string[] = []
 
     // 长度检查
-    if (password.length >= 8) score += 1
+    if (password.length >= 8)
+score += 1
     else suggestions.push('密码长度至少8位')
 
-    if (password.length >= 12) score += 1
+    if (password.length >= 12)
+score += 1
     else suggestions.push('建议密码长度12位以上')
 
     // 字符类型检查
-    if (/[a-z]/.test(password)) score += 1
+    if (/[a-z]/.test(password))
+score += 1
     else suggestions.push('包含小写字母')
 
-    if (/[A-Z]/.test(password)) score += 1
+    if (/[A-Z]/.test(password))
+score += 1
     else suggestions.push('包含大写字母')
 
-    if (/[0-9]/.test(password)) score += 1
+    if (/\d/.test(password))
+score += 1
     else suggestions.push('包含数字')
 
-    if (/[^a-zA-Z0-9]/.test(password)) score += 1
+    if (/[^a-z0-9]/i.test(password))
+score += 1
     else suggestions.push('包含特殊字符')
 
     // 复杂度检查
-    if (!/(.)\1{2,}/.test(password)) score += 1
+    if (!/(.)\1{2,}/.test(password))
+score += 1
     else suggestions.push('避免连续重复字符')
 
-    if (!/123|abc|qwe/i.test(password)) score += 1
+    if (!/123|abc|qwe/i.test(password))
+score += 1
     else suggestions.push('避免常见字符序列')
 
     // 确定强度等级
     let level: 'weak' | 'medium' | 'strong' | 'very-strong'
-    if (score <= 3) level = 'weak'
-    else if (score <= 5) level = 'medium'
-    else if (score <= 7) level = 'strong'
+    if (score <= 3)
+level = 'weak'
+    else if (score <= 5)
+level = 'medium'
+    else if (score <= 7)
+level = 'strong'
     else level = 'very-strong'
 
     return { score, level, suggestions }
@@ -435,21 +457,25 @@ export class PasswordStrength {
       includeNumbers?: boolean
       includeSymbols?: boolean
       excludeSimilar?: boolean
-    } = {}
+    } = {},
   ): string {
     const {
       includeUppercase = true,
       includeLowercase = true,
       includeNumbers = true,
       includeSymbols = true,
-      excludeSimilar = true
+      excludeSimilar = true,
     } = options
 
     let charset = ''
-    if (includeLowercase) charset += 'abcdefghijklmnopqrstuvwxyz'
-    if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    if (includeNumbers) charset += '0123456789'
-    if (includeSymbols) charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    if (includeLowercase)
+charset += 'abcdefghijklmnopqrstuvwxyz'
+    if (includeUppercase)
+charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if (includeNumbers)
+charset += '0123456789'
+    if (includeSymbols)
+charset += '!@#$%^&*()_+-=[]{}|;:,.<>?'
 
     if (excludeSimilar) {
       charset = charset.replace(/[0O1lI]/g, '')
@@ -482,5 +508,5 @@ export const HashPlugin: CryptoPlugin = {
 
   async destroy() {
     console.log('[HashPlugin] Destroyed')
-  }
+  },
 }

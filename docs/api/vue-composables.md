@@ -47,12 +47,12 @@ const encrypted = await crypto.encrypt('Hello World', {
 <script setup lang="ts">
 import { useSymmetricCrypto } from '@ldesign/crypto'
 
-const { 
-  encrypt, 
-  decrypt, 
+const {
+  encrypt,
+  decrypt,
   generateKey,
   aesEncrypt,
-  aesDecrypt 
+  aesDecrypt
 } = useSymmetricCrypto()
 
 // AES 加密
@@ -196,17 +196,6 @@ const sm4Encrypted = await sm4Encrypt('data', sm4Key, { mode: 'CBC' })
 
 **示例:**
 ```vue
-<template>
-  <div>
-    <div v-if="isLoading">加载中...</div>
-    <div v-else-if="error">错误: {{ error.message }}</div>
-    <div v-else>
-      <p>操作状态: {{ status }}</p>
-      <p>进度: {{ progress }}%</p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useCryptoState, useSymmetricCrypto } from '@ldesign/crypto'
 
@@ -223,32 +212,49 @@ const {
 
 const { encrypt } = useSymmetricCrypto()
 
-const handleEncrypt = async (data: string) => {
+async function handleEncrypt(data: string) {
   try {
     setLoading(true)
     setProgress(0)
-    
+
     // 模拟进度更新
     const progressInterval = setInterval(() => {
       setProgress(prev => Math.min(prev + 10, 90))
     }, 100)
-    
+
     const result = await encrypt(data, {
       algorithm: 'AES',
       key: 'secret-key'
     })
-    
+
     clearInterval(progressInterval)
     setProgress(100)
-    
+
     return result
-  } catch (err) {
+  }
+ catch (err) {
     setError(err)
-  } finally {
+  }
+ finally {
     setLoading(false)
   }
 }
 </script>
+
+<template>
+  <div>
+    <div v-if="isLoading">
+      加载中...
+    </div>
+    <div v-else-if="error">
+      错误: {{ error.message }}
+    </div>
+    <div v-else>
+      <p>操作状态: {{ status }}</p>
+      <p>进度: {{ progress }}%</p>
+    </div>
+  </div>
+</template>
 ```
 
 ### `useCryptoCache()`
@@ -299,40 +305,6 @@ if (!cachedHash) {
 
 **示例:**
 ```vue
-<template>
-  <div class="file-encryption">
-    <input 
-      type="file" 
-      @change="handleFileSelect"
-      :disabled="isProcessing"
-    />
-    
-    <div v-if="selectedFile">
-      <p>文件: {{ selectedFile.name }}</p>
-      <p>大小: {{ formatFileSize(selectedFile.size) }}</p>
-      
-      <button @click="encryptFile" :disabled="isProcessing">
-        {{ isProcessing ? '加密中...' : '加密文件' }}
-      </button>
-      
-      <button @click="decryptFile" :disabled="isProcessing">
-        {{ isProcessing ? '解密中...' : '解密文件' }}
-      </button>
-    </div>
-    
-    <div v-if="isProcessing" class="progress">
-      <div class="progress-bar" :style="{ width: progress + '%' }"></div>
-      <span>{{ progress }}%</span>
-    </div>
-    
-    <div v-if="result">
-      <h3>处理完成</h3>
-      <p>耗时: {{ result.duration }}ms</p>
-      <button @click="downloadResult">下载结果</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useFileEncryption } from '@ldesign/crypto'
 
@@ -352,13 +324,49 @@ const {
   chunkSize: 1024 * 1024 // 1MB chunks
 })
 
-const handleFileSelect = (event: Event) => {
+function handleFileSelect(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     selectFile(file)
   }
 }
 </script>
+
+<template>
+  <div class="file-encryption">
+    <input
+      type="file"
+      :disabled="isProcessing"
+      @change="handleFileSelect"
+    >
+
+    <div v-if="selectedFile">
+      <p>文件: {{ selectedFile.name }}</p>
+      <p>大小: {{ formatFileSize(selectedFile.size) }}</p>
+
+      <button :disabled="isProcessing" @click="encryptFile">
+        {{ isProcessing ? '加密中...' : '加密文件' }}
+      </button>
+
+      <button :disabled="isProcessing" @click="decryptFile">
+        {{ isProcessing ? '解密中...' : '解密文件' }}
+      </button>
+    </div>
+
+    <div v-if="isProcessing" class="progress">
+      <div class="progress-bar" :style="{ width: `${progress}%` }" />
+      <span>{{ progress }}%</span>
+    </div>
+
+    <div v-if="result">
+      <h3>处理完成</h3>
+      <p>耗时: {{ result.duration }}ms</p>
+      <button @click="downloadResult">
+        下载结果
+      </button>
+    </div>
+  </div>
+</template>
 ```
 
 ### `useFileHash()`
@@ -378,18 +386,18 @@ const {
   result
 } = useFileHash()
 
-const handleFileHash = async (file: File) => {
+async function handleFileHash(file: File) {
   const hashResult = await calculateHash(file, 'SHA-256', {
     onProgress: (prog) => {
       console.log(`哈希计算进度: ${prog.percentage}%`)
     }
   })
-  
+
   console.log('文件哈希:', hashResult.hash)
   console.log('计算时间:', hashResult.duration)
 }
 
-const handleVerifyIntegrity = async (file: File, expectedHash: string) => {
+async function handleVerifyIntegrity(file: File, expectedHash: string) {
   const isValid = await verifyFileIntegrity(file, expectedHash, 'SHA-256')
   console.log('文件完整性:', isValid ? '验证通过' : '验证失败')
 }
@@ -480,38 +488,6 @@ const childKey = await deriveKey(masterKey, {
 
 **示例:**
 ```vue
-<template>
-  <div class="performance-monitor">
-    <h3>性能监控</h3>
-    
-    <div class="metrics">
-      <div class="metric">
-        <label>总操作数:</label>
-        <span>{{ metrics.totalOperations }}</span>
-      </div>
-      
-      <div class="metric">
-        <label>平均耗时:</label>
-        <span>{{ metrics.averageTime }}ms</span>
-      </div>
-      
-      <div class="metric">
-        <label>缓存命中率:</label>
-        <span>{{ (metrics.cacheHitRate * 100).toFixed(1) }}%</span>
-      </div>
-    </div>
-    
-    <div class="recent-operations">
-      <h4>最近操作</h4>
-      <ul>
-        <li v-for="op in recentOperations" :key="op.id">
-          {{ op.operation }} - {{ op.duration }}ms
-        </li>
-      </ul>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { usePerformanceMonitor } from '@ldesign/crypto'
 
@@ -538,11 +514,43 @@ onUnmounted(() => {
 })
 
 // 获取详细报告
-const generateReport = async () => {
+async function generateReport() {
   const report = await getDetailedReport()
   console.log('性能报告:', report)
 }
 </script>
+
+<template>
+  <div class="performance-monitor">
+    <h3>性能监控</h3>
+
+    <div class="metrics">
+      <div class="metric">
+        <label>总操作数:</label>
+        <span>{{ metrics.totalOperations }}</span>
+      </div>
+
+      <div class="metric">
+        <label>平均耗时:</label>
+        <span>{{ metrics.averageTime }}ms</span>
+      </div>
+
+      <div class="metric">
+        <label>缓存命中率:</label>
+        <span>{{ (metrics.cacheHitRate * 100).toFixed(1) }}%</span>
+      </div>
+    </div>
+
+    <div class="recent-operations">
+      <h4>最近操作</h4>
+      <ul>
+        <li v-for="op in recentOperations" :key="op.id">
+          {{ op.operation }} - {{ op.duration }}ms
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
 ```
 
 ## 类型定义
@@ -552,15 +560,15 @@ const generateReport = async () => {
 ```typescript
 interface CryptoComposable {
   // 初始化
-  init(): Promise<void>
-  
+  init: () => Promise<void>
+
   // 基础加密
-  encrypt(data: string | ArrayBuffer, options: EncryptOptions): Promise<EncryptResult>
-  decrypt(data: string | ArrayBuffer, options: DecryptOptions): Promise<DecryptResult>
-  
+  encrypt: (data: string | ArrayBuffer, options: EncryptOptions) => Promise<EncryptResult>
+  decrypt: (data: string | ArrayBuffer, options: DecryptOptions) => Promise<DecryptResult>
+
   // 密钥管理
-  generateKey(algorithm: string, keySize: number): string | ArrayBuffer
-  
+  generateKey: (algorithm: string, keySize: number) => string | ArrayBuffer
+
   // 状态
   isInitialized: Ref<boolean>
   isLoading: Ref<boolean>
@@ -572,12 +580,12 @@ interface CryptoStateComposable {
   error: Ref<Error | null>
   status: Ref<string>
   progress: Ref<number>
-  
-  setLoading(loading: boolean): void
-  setError(error: Error | null): void
-  setStatus(status: string): void
-  setProgress(progress: number): void
-  clearError(): void
+
+  setLoading: (loading: boolean) => void
+  setError: (error: Error | null) => void
+  setStatus: (status: string) => void
+  setProgress: (progress: number) => void
+  clearError: () => void
 }
 
 interface FileEncryptionComposable {
@@ -586,12 +594,12 @@ interface FileEncryptionComposable {
   progress: Ref<number>
   result: Ref<FileProcessResult | null>
   error: Ref<Error | null>
-  
-  selectFile(file: File): void
-  encryptFile(password?: string): Promise<void>
-  decryptFile(password?: string): Promise<void>
-  downloadResult(): void
-  formatFileSize(bytes: number): string
+
+  selectFile: (file: File) => void
+  encryptFile: (password?: string) => Promise<void>
+  decryptFile: (password?: string) => Promise<void>
+  downloadResult: () => void
+  formatFileSize: (bytes: number) => string
 }
 ```
 
@@ -600,43 +608,6 @@ interface FileEncryptionComposable {
 ### 完整的加密应用
 
 ```vue
-<template>
-  <div class="crypto-app">
-    <nav class="tabs">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.id"
-        :class="{ active: activeTab === tab.id }"
-        @click="activeTab = tab.id"
-      >
-        {{ tab.label }}
-      </button>
-    </nav>
-    
-    <div class="tab-content">
-      <!-- 对称加密 -->
-      <div v-if="activeTab === 'symmetric'" class="tab-panel">
-        <SymmetricEncryptionPanel />
-      </div>
-      
-      <!-- 非对称加密 -->
-      <div v-if="activeTab === 'asymmetric'" class="tab-panel">
-        <AsymmetricEncryptionPanel />
-      </div>
-      
-      <!-- 哈希计算 -->
-      <div v-if="activeTab === 'hash'" class="tab-panel">
-        <HashCalculationPanel />
-      </div>
-      
-      <!-- 文件加密 -->
-      <div v-if="activeTab === 'file'" class="tab-panel">
-        <FileEncryptionPanel />
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import SymmetricEncryptionPanel from './components/SymmetricEncryptionPanel.vue'
@@ -653,6 +624,43 @@ const tabs = [
   { id: 'file', label: '文件加密' }
 ]
 </script>
+
+<template>
+  <div class="crypto-app">
+    <nav class="tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        :class="{ active: activeTab === tab.id }"
+        @click="activeTab = tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <div class="tab-content">
+      <!-- 对称加密 -->
+      <div v-if="activeTab === 'symmetric'" class="tab-panel">
+        <SymmetricEncryptionPanel />
+      </div>
+
+      <!-- 非对称加密 -->
+      <div v-if="activeTab === 'asymmetric'" class="tab-panel">
+        <AsymmetricEncryptionPanel />
+      </div>
+
+      <!-- 哈希计算 -->
+      <div v-if="activeTab === 'hash'" class="tab-panel">
+        <HashCalculationPanel />
+      </div>
+
+      <!-- 文件加密 -->
+      <div v-if="activeTab === 'file'" class="tab-panel">
+        <FileEncryptionPanel />
+      </div>
+    </div>
+  </div>
+</template>
 ```
 
 Vue 组合式 API 让你能够在 Vue 3 应用中优雅地使用加密功能，提供了响应式状态管理、错误处理和性能监控等完整功能。

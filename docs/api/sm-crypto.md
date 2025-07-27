@@ -481,15 +481,15 @@ import { useSMCrypto } from '@ldesign/crypto'
 
 class SM2SecureMessaging {
   private { generateSM2KeyPair, sm2Encrypt, sm2Decrypt, sm2Sign, sm2Verify } = useSMCrypto()
-  
+
   async setupCommunication() {
     // 生成双方密钥对
     const aliceKeyPair = await this.generateSM2KeyPair()
     const bobKeyPair = await this.generateSM2KeyPair()
-    
+
     return { aliceKeyPair, bobKeyPair }
   }
-  
+
   async sendSecureMessage(
     message: string,
     senderPrivateKey: SM2PrivateKey,
@@ -500,18 +500,18 @@ class SM2SecureMessaging {
       mode: 'C1C3C2',
       encoding: 'base64'
     })
-    
+
     // 2. 对密文签名
     const signature = await this.sm2Sign(encrypted.ciphertext, senderPrivateKey, {
       encoding: 'base64'
     })
-    
+
     return {
       ciphertext: encrypted.ciphertext,
       signature: signature.signature
     }
   }
-  
+
   async receiveSecureMessage(
     secureMessage: { ciphertext: string, signature: string },
     receiverPrivateKey: SM2PrivateKey,
@@ -524,11 +524,11 @@ class SM2SecureMessaging {
       senderPublicKey,
       { encoding: 'base64' }
     )
-    
+
     if (!isValidSignature) {
       throw new Error('签名验证失败')
     }
-    
+
     // 2. 解密消息
     const decrypted = await this.sm2Decrypt(
       secureMessage.ciphertext,
@@ -538,7 +538,7 @@ class SM2SecureMessaging {
         encoding: 'base64'
       }
     )
-    
+
     return decrypted.plaintext
   }
 }
@@ -549,24 +549,24 @@ class SM2SecureMessaging {
 ```typescript
 class SM4FileEncryption {
   private { generateSM4Key, sm4Encrypt, sm4Decrypt } = useSMCrypto()
-  
+
   async encryptFile(file: File, password: string): Promise<EncryptedFile> {
     // 1. 从密码派生密钥
     const key = await this.deriveKeyFromPassword(password)
-    
+
     // 2. 生成随机 IV
     const iv = crypto.getRandomValues(new Uint8Array(16))
-    
+
     // 3. 读取文件内容
     const fileData = await this.readFileAsArrayBuffer(file)
-    
+
     // 4. 加密文件
     const encrypted = await this.sm4Encrypt(fileData, key, {
       mode: 'CBC',
       iv,
       padding: 'PKCS7'
     })
-    
+
     // 5. 创建加密包
     const encryptedPackage = {
       version: '1.0',
@@ -577,21 +577,21 @@ class SM4FileEncryption {
       originalSize: file.size,
       timestamp: new Date().toISOString()
     }
-    
+
     return {
       data: new Blob([JSON.stringify(encryptedPackage)]),
       filename: file.name + '.sm4'
     }
   }
-  
+
   async decryptFile(encryptedFile: File, password: string): Promise<File> {
     // 1. 读取加密包
     const packageText = await encryptedFile.text()
     const encryptedPackage = JSON.parse(packageText)
-    
+
     // 2. 从密码派生密钥
     const key = await this.deriveKeyFromPassword(password)
-    
+
     // 3. 解密数据
     const decrypted = await this.sm4Decrypt(
       encryptedPackage.data,
@@ -602,31 +602,31 @@ class SM4FileEncryption {
         padding: 'PKCS7'
       }
     )
-    
+
     // 4. 创建原始文件
     return new File([decrypted.plaintext], encryptedPackage.originalName)
   }
-  
+
   private async deriveKeyFromPassword(password: string): Promise<ArrayBuffer> {
     // 使用 SM3 和 PBKDF2 派生密钥
     const encoder = new TextEncoder()
     const passwordData = encoder.encode(password)
     const salt = encoder.encode('sm4-file-encryption-salt')
-    
+
     // 简化的密钥派生（实际应使用更安全的方法）
     let key = passwordData
     for (let i = 0; i < 10000; i++) {
       const combined = new Uint8Array(key.length + salt.length)
       combined.set(key)
       combined.set(salt, key.length)
-      
+
       const hash = await crypto.subtle.digest('SHA-256', combined)
       key = new Uint8Array(hash)
     }
-    
+
     return key.slice(0, 16).buffer // SM4 需要 128 位密钥
   }
-  
+
   private readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()

@@ -124,7 +124,7 @@ import { useSymmetricCrypto } from '@ldesign/crypto'
 
 const { encrypt, result, isLoading } = useSymmetricCrypto()
 
-const handleEncrypt = () => {
+function handleEncrypt() {
   encrypt('Hello World', { key: 'mykey' })
 }
 </script>

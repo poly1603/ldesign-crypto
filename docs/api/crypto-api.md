@@ -437,30 +437,30 @@ async function encryptionExample() {
     debug: true,
     performance: { enabled: true }
   })
-  
+
   await crypto.init()
-  
+
   // AES 加密
   const aesKey = crypto.generateKey('AES', 256)
   const encrypted = await crypto.aesEncrypt('敏感数据', {
     key: aesKey,
     mode: 'CBC'
   })
-  
+
   // RSA 签名
   const rsaKeys = await crypto.generateRSAKeyPair(2048)
   const signature = await crypto.rsaSign('敏感数据', {
     privateKey: rsaKeys.privateKey
   })
-  
+
   // 验证签名
   const verified = await crypto.rsaVerify('敏感数据', signature.signature, {
     publicKey: rsaKeys.publicKey
   })
-  
+
   console.log('加密成功:', encrypted.success)
   console.log('签名验证:', verified.valid)
-  
+
   // 清理
   await crypto.destroy()
 }

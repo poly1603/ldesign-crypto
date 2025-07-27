@@ -9,112 +9,9 @@
 一个完整的文件加密/解密组件示例，支持拖拽上传、进度显示和密码强度检测。
 
 ```vue
-<template>
-  <div class="file-crypto">
-    <h2>🔐 文件加密工具</h2>
-
-    <!-- 文件选择 -->
-    <div class="file-section">
-      <h3>选择文件</h3>
-      <input
-        type="file"
-        @change="handleFileSelect"
-        accept="*/*"
-        :disabled="isProcessing"
-      />
-
-      <div v-if="selectedFile" class="file-info">
-        <p><strong>文件名:</strong> {{ selectedFile.name }}</p>
-        <p><strong>大小:</strong> {{ formatFileSize(selectedFile.size) }}</p>
-        <p><strong>类型:</strong> {{ selectedFile.type || '未知' }}</p>
-      </div>
-    </div>
-
-    <!-- 密码输入 -->
-    <div class="password-section">
-      <h3>设置密码</h3>
-      <div class="password-input">
-        <input
-          v-model="password"
-          :type="showPassword ? 'text' : 'password'"
-          placeholder="输入加密密码"
-          :disabled="isProcessing"
-        />
-        <button @click="showPassword = !showPassword" class="toggle-password">
-          {{ showPassword ? '👁️' : '🙈' }}
-        </button>
-      </div>
-
-      <div class="password-strength">
-        <div class="strength-bar">
-          <div
-            class="strength-fill"
-            :style="{ width: passwordStrength.percentage + '%' }"
-            :class="passwordStrength.level"
-          ></div>
-        </div>
-        <span class="strength-text">{{ passwordStrength.text }}</span>
-      </div>
-    </div>
-
-    <!-- 操作按钮 -->
-    <div class="actions">
-      <button
-        @click="encryptFile"
-        :disabled="!canEncrypt"
-        class="btn-primary"
-      >
-        {{ isProcessing ? '加密中...' : '🔒 加密文件' }}
-      </button>
-
-      <button
-        @click="decryptFile"
-        :disabled="!canDecrypt"
-        class="btn-secondary"
-      >
-        {{ isProcessing ? '解密中...' : '🔓 解密文件' }}
-      </button>
-    </div>
-
-    <!-- 进度显示 -->
-    <div v-if="isProcessing" class="progress-section">
-      <div class="progress-bar">
-        <div
-          class="progress-fill"
-          :style="{ width: progress + '%' }"
-        ></div>
-      </div>
-      <p class="progress-text">{{ progressText }}</p>
-    </div>
-
-    <!-- 结果显示 -->
-    <div v-if="result" class="result-section">
-      <h3>{{ result.type === 'encrypt' ? '加密完成' : '解密完成' }}</h3>
-
-      <div class="result-info">
-        <p><strong>原文件:</strong> {{ result.originalName }}</p>
-        <p><strong>处理后:</strong> {{ result.processedName }}</p>
-        <p><strong>耗时:</strong> {{ result.duration }}ms</p>
-        <p v-if="result.type === 'encrypt'"><strong>文件哈希:</strong> {{ result.hash }}</p>
-      </div>
-
-      <button @click="downloadResult" class="btn-download">
-        📥 下载文件
-      </button>
-    </div>
-
-    <!-- 错误显示 -->
-    <div v-if="error" class="error-section">
-      <h3>❌ 错误</h3>
-      <p>{{ error }}</p>
-      <button @click="clearError" class="btn-clear">清除</button>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useSymmetricCrypto, useHash } from '@ldesign/crypto'
+import { computed, onMounted, ref } from 'vue'
+import { useHash, useSymmetricCrypto } from '@ldesign/crypto'
 
 // 组合式 API
 const { encrypt, decrypt, generateKey } = useSymmetricCrypto()
@@ -143,21 +40,26 @@ const canDecrypt = computed(() =>
 const passwordStrength = computed(() => {
   const pwd = password.value
   let score = 0
-  let feedback = []
+  const feedback = []
 
-  if (pwd.length >= 8) score += 1
+  if (pwd.length >= 8)
+score += 1
   else feedback.push('至少8位')
 
-  if (/[a-z]/.test(pwd)) score += 1
+  if (/[a-z]/.test(pwd))
+score += 1
   else feedback.push('包含小写字母')
 
-  if (/[A-Z]/.test(pwd)) score += 1
+  if (/[A-Z]/.test(pwd))
+score += 1
   else feedback.push('包含大写字母')
 
-  if (/[0-9]/.test(pwd)) score += 1
+  if (/\d/.test(pwd))
+score += 1
   else feedback.push('包含数字')
 
-  if (/[^a-zA-Z0-9]/.test(pwd)) score += 1
+  if (/[^a-z0-9]/i.test(pwd))
+score += 1
   else feedback.push('包含特殊字符')
 
   const levels = [
@@ -172,7 +74,7 @@ const passwordStrength = computed(() => {
 })
 
 // 方法
-const handleFileSelect = (event: Event) => {
+function handleFileSelect(event: Event) {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
     selectedFile.value = file
@@ -181,16 +83,18 @@ const handleFileSelect = (event: Event) => {
   }
 }
 
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes'
+function formatFileSize(bytes: number) {
+  if (bytes === 0)
+return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
-const encryptFile = async () => {
-  if (!selectedFile.value || !password.value) return
+async function encryptFile() {
+  if (!selectedFile.value || !password.value)
+return
 
   isProcessing.value = true
   progress.value = 0
@@ -258,20 +162,22 @@ const encryptFile = async () => {
     result.value = {
       type: 'encrypt',
       originalName: selectedFile.value.name,
-      processedName: selectedFile.value.name + '.encrypted',
+      processedName: `${selectedFile.value.name}.encrypted`,
       duration,
       hash: fileHash
     }
-
-  } catch (err) {
-    error.value = '加密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `加密失败: ${err.message}`
+  }
+ finally {
     isProcessing.value = false
   }
 }
 
-const decryptFile = async () => {
-  if (!selectedFile.value || !password.value) return
+async function decryptFile() {
+  if (!selectedFile.value || !password.value)
+return
 
   isProcessing.value = true
   progress.value = 0
@@ -337,16 +243,18 @@ const decryptFile = async () => {
       processedName: encryptedPackage.originalName,
       duration
     }
-
-  } catch (err) {
-    error.value = '解密失败: ' + err.message
-  } finally {
+  }
+ catch (err) {
+    error.value = `解密失败: ${err.message}`
+  }
+ finally {
     isProcessing.value = false
   }
 }
 
-const downloadResult = () => {
-  if (!processedBlob.value || !result.value) return
+function downloadResult() {
+  if (!processedBlob.value || !result.value)
+return
 
   const url = URL.createObjectURL(processedBlob.value)
   const a = document.createElement('a')
@@ -358,17 +266,126 @@ const downloadResult = () => {
   URL.revokeObjectURL(url)
 }
 
-const clearError = () => {
+function clearError() {
   error.value = ''
 }
 
 // 辅助函数
-const deriveKeyFromPassword = async (password: string, salt: string) => {
+async function deriveKeyFromPassword(password: string, salt: string) {
   // 这里应该使用真实的 PBKDF2 实现
   // 为了演示，我们使用简化版本
   return password + salt
 }
 </script>
+
+<template>
+  <div class="file-crypto">
+    <h2>🔐 文件加密工具</h2>
+
+    <!-- 文件选择 -->
+    <div class="file-section">
+      <h3>选择文件</h3>
+      <input
+        type="file"
+        accept="*/*"
+        :disabled="isProcessing"
+        @change="handleFileSelect"
+      >
+
+      <div v-if="selectedFile" class="file-info">
+        <p><strong>文件名:</strong> {{ selectedFile.name }}</p>
+        <p><strong>大小:</strong> {{ formatFileSize(selectedFile.size) }}</p>
+        <p><strong>类型:</strong> {{ selectedFile.type || '未知' }}</p>
+      </div>
+    </div>
+
+    <!-- 密码输入 -->
+    <div class="password-section">
+      <h3>设置密码</h3>
+      <div class="password-input">
+        <input
+          v-model="password"
+          :type="showPassword ? 'text' : 'password'"
+          placeholder="输入加密密码"
+          :disabled="isProcessing"
+        >
+        <button class="toggle-password" @click="showPassword = !showPassword">
+          {{ showPassword ? '👁️' : '🙈' }}
+        </button>
+      </div>
+
+      <div class="password-strength">
+        <div class="strength-bar">
+          <div
+            class="strength-fill"
+            :style="{ width: `${passwordStrength.percentage}%` }"
+            :class="passwordStrength.level"
+          />
+        </div>
+        <span class="strength-text">{{ passwordStrength.text }}</span>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="actions">
+      <button
+        :disabled="!canEncrypt"
+        class="btn-primary"
+        @click="encryptFile"
+      >
+        {{ isProcessing ? '加密中...' : '🔒 加密文件' }}
+      </button>
+
+      <button
+        :disabled="!canDecrypt"
+        class="btn-secondary"
+        @click="decryptFile"
+      >
+        {{ isProcessing ? '解密中...' : '🔓 解密文件' }}
+      </button>
+    </div>
+
+    <!-- 进度显示 -->
+    <div v-if="isProcessing" class="progress-section">
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          :style="{ width: `${progress}%` }"
+        />
+      </div>
+      <p class="progress-text">
+        {{ progressText }}
+      </p>
+    </div>
+
+    <!-- 结果显示 -->
+    <div v-if="result" class="result-section">
+      <h3>{{ result.type === 'encrypt' ? '加密完成' : '解密完成' }}</h3>
+
+      <div class="result-info">
+        <p><strong>原文件:</strong> {{ result.originalName }}</p>
+        <p><strong>处理后:</strong> {{ result.processedName }}</p>
+        <p><strong>耗时:</strong> {{ result.duration }}ms</p>
+        <p v-if="result.type === 'encrypt'">
+          <strong>文件哈希:</strong> {{ result.hash }}
+        </p>
+      </div>
+
+      <button class="btn-download" @click="downloadResult">
+        📥 下载文件
+      </button>
+    </div>
+
+    <!-- 错误显示 -->
+    <div v-if="error" class="error-section">
+      <h3>❌ 错误</h3>
+      <p>{{ error }}</p>
+      <button class="btn-clear" @click="clearError">
+        清除
+      </button>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .file-crypto {
@@ -512,66 +529,9 @@ button:disabled {
 一个简单的密码管理器组件示例。
 
 ```vue
-<template>
-  <div class="password-manager">
-    <h2>🔑 密码管理器</h2>
-
-    <!-- 主密码设置 -->
-    <div v-if="!isUnlocked" class="master-password">
-      <h3>输入主密码</h3>
-      <input
-        v-model="masterPassword"
-        type="password"
-        placeholder="主密码"
-        @keyup.enter="unlock"
-      />
-      <button @click="unlock" :disabled="!masterPassword">
-        解锁
-      </button>
-    </div>
-
-    <!-- 密码列表 -->
-    <div v-else class="password-list">
-      <div class="header">
-        <h3>已保存的密码</h3>
-        <button @click="showAddForm = true" class="btn-add">
-          ➕ 添加密码
-        </button>
-      </div>
-
-      <!-- 添加密码表单 -->
-      <div v-if="showAddForm" class="add-form">
-        <input v-model="newPassword.site" placeholder="网站名称" />
-        <input v-model="newPassword.username" placeholder="用户名" />
-        <input v-model="newPassword.password" placeholder="密码" />
-        <div class="form-actions">
-          <button @click="addPassword" class="btn-save">保存</button>
-          <button @click="cancelAdd" class="btn-cancel">取消</button>
-        </div>
-      </div>
-
-      <!-- 密码条目 -->
-      <div v-for="item in passwords" :key="item.id" class="password-item">
-        <div class="item-info">
-          <h4>{{ item.site }}</h4>
-          <p>{{ item.username }}</p>
-        </div>
-        <div class="item-actions">
-          <button @click="copyPassword(item)" class="btn-copy">
-            📋 复制密码
-          </button>
-          <button @click="deletePassword(item.id)" class="btn-delete">
-            🗑️ 删除
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useSymmetricCrypto, useHash } from '@ldesign/crypto'
+import { onMounted, ref } from 'vue'
+import { useHash, useSymmetricCrypto } from '@ldesign/crypto'
 
 const { encrypt, decrypt } = useSymmetricCrypto()
 const { hash } = useHash()
@@ -586,7 +546,7 @@ const newPassword = ref({
   password: ''
 })
 
-const unlock = async () => {
+async function unlock() {
   // 验证主密码并解密密码库
   try {
     const stored = localStorage.getItem('encrypted-passwords')
@@ -605,12 +565,13 @@ const unlock = async () => {
     }
 
     isUnlocked.value = true
-  } catch (error) {
+  }
+ catch (error) {
     alert('主密码错误')
   }
 }
 
-const addPassword = async () => {
+async function addPassword() {
   const newItem = {
     id: Date.now(),
     site: newPassword.value.site,
@@ -626,7 +587,7 @@ const addPassword = async () => {
   showAddForm.value = false
 }
 
-const savePasswords = async () => {
+async function savePasswords() {
   const data = JSON.stringify(passwords.value)
   const salt = generateSalt()
   const key = await deriveKey(masterPassword.value, salt)
@@ -646,40 +607,101 @@ const savePasswords = async () => {
   localStorage.setItem('encrypted-passwords', JSON.stringify(encryptedPackage))
 }
 
-const copyPassword = async (item) => {
+async function copyPassword(item) {
   try {
     await navigator.clipboard.writeText(item.password)
     alert('密码已复制到剪贴板')
-  } catch (error) {
+  }
+ catch (error) {
     console.error('复制失败:', error)
   }
 }
 
-const deletePassword = async (id) => {
+async function deletePassword(id) {
   if (confirm('确定要删除这个密码吗？')) {
     passwords.value = passwords.value.filter(item => item.id !== id)
     await savePasswords()
   }
 }
 
-const deriveKey = async (password, salt) => {
+async function deriveKey(password, salt) {
   // 简化的密钥派生
   const combined = password + salt
   const hashed = await hash(combined, 'SHA-256')
   return hashed.substring(0, 64)
 }
 
-const generateSalt = () => {
-  return Array.from({length: 32}, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('')
+function generateSalt() {
+  return Array.from({ length: 32 }, () =>
+    Math.floor(Math.random() * 16).toString(16)).join('')
 }
 
-const cancelAdd = () => {
+function cancelAdd() {
   newPassword.value = { site: '', username: '', password: '' }
   showAddForm.value = false
 }
 </script>
+
+<template>
+  <div class="password-manager">
+    <h2>🔑 密码管理器</h2>
+
+    <!-- 主密码设置 -->
+    <div v-if="!isUnlocked" class="master-password">
+      <h3>输入主密码</h3>
+      <input
+        v-model="masterPassword"
+        type="password"
+        placeholder="主密码"
+        @keyup.enter="unlock"
+      >
+      <button :disabled="!masterPassword" @click="unlock">
+        解锁
+      </button>
+    </div>
+
+    <!-- 密码列表 -->
+    <div v-else class="password-list">
+      <div class="header">
+        <h3>已保存的密码</h3>
+        <button class="btn-add" @click="showAddForm = true">
+          ➕ 添加密码
+        </button>
+      </div>
+
+      <!-- 添加密码表单 -->
+      <div v-if="showAddForm" class="add-form">
+        <input v-model="newPassword.site" placeholder="网站名称">
+        <input v-model="newPassword.username" placeholder="用户名">
+        <input v-model="newPassword.password" placeholder="密码">
+        <div class="form-actions">
+          <button class="btn-save" @click="addPassword">
+            保存
+          </button>
+          <button class="btn-cancel" @click="cancelAdd">
+            取消
+          </button>
+        </div>
+      </div>
+
+      <!-- 密码条目 -->
+      <div v-for="item in passwords" :key="item.id" class="password-item">
+        <div class="item-info">
+          <h4>{{ item.site }}</h4>
+          <p>{{ item.username }}</p>
+        </div>
+        <div class="item-actions">
+          <button class="btn-copy" @click="copyPassword(item)">
+            📋 复制密码
+          </button>
+          <button class="btn-delete" @click="deletePassword(item.id)">
+            🗑️ 删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 /* 样式省略，与上面的组件类似 */

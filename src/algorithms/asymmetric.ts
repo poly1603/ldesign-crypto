@@ -10,7 +10,7 @@ import type {
   EncodingFormat,
   KeyPair,
   SignatureResult,
-  VerifyResult
+  VerifyResult,
 } from '../types'
 import { CryptoError, CryptoErrorType } from '../types'
 
@@ -28,14 +28,15 @@ export class RSACrypto {
       return {
         publicKey: forge.pki.publicKeyToPem(keypair.publicKey),
         privateKey: forge.pki.privateKeyToPem(keypair.privateKey),
-        format: 'PEM'
+        format: 'PEM',
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `RSA key generation failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -49,7 +50,7 @@ export class RSACrypto {
         publicKey,
         padding = 'PKCS1',
         inputEncoding = 'utf8',
-        outputEncoding = 'base64'
+        outputEncoding = 'base64',
       } = config
 
       if (!publicKey) {
@@ -61,12 +62,13 @@ export class RSACrypto {
       const encrypted = publicKeyObj.encrypt(data, 'RSA-OAEP')
 
       return this.formatOutput(forge.util.encode64(encrypted), outputEncoding)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `RSA encryption failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -80,7 +82,7 @@ export class RSACrypto {
         privateKey,
         padding = 'PKCS1',
         inputEncoding = 'base64',
-        outputEncoding = 'utf8'
+        outputEncoding = 'utf8',
       } = config
 
       if (!privateKey) {
@@ -93,12 +95,13 @@ export class RSACrypto {
       const decrypted = privateKeyObj.decrypt(encryptedBytes, 'RSA-OAEP')
 
       return decrypted
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.DECRYPTION_FAILED,
         `RSA decryption failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -111,7 +114,7 @@ export class RSACrypto {
       const {
         privateKey,
         inputEncoding = 'utf8',
-        outputEncoding = 'base64'
+        outputEncoding = 'base64',
       } = config
 
       if (!privateKey) {
@@ -129,14 +132,15 @@ export class RSACrypto {
       return {
         signature: this.formatOutput(signatureBase64, outputEncoding),
         algorithm: 'RSA-SHA256',
-        encoding: outputEncoding
+        encoding: outputEncoding,
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.SIGNATURE_FAILED,
         `RSA signing failed: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -149,7 +153,7 @@ export class RSACrypto {
       const {
         publicKey,
         inputEncoding = 'utf8',
-        outputEncoding = 'base64'
+        outputEncoding = 'base64',
       } = config
 
       if (!publicKey) {
@@ -165,10 +169,11 @@ export class RSACrypto {
       const valid = publicKeyObj.verify(md.digest().bytes(), signatureBytes)
 
       return { valid }
-    } catch (error) {
+    }
+ catch (error) {
       return {
         valid: false,
-        error: `RSA verification failed: ${error}`
+        error: `RSA verification failed: ${error}`,
       }
     }
   }
@@ -207,14 +212,15 @@ export class ECCCrypto {
       return {
         publicKey: forge.pki.publicKeyToPem(keypair.publicKey),
         privateKey: forge.pki.privateKeyToPem(keypair.privateKey),
-        format: 'PEM'
+        format: 'PEM',
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.KEY_GENERATION_FAILED,
         `ECC key generation failed: ${error}`,
         'ECC',
-        error
+        error,
       )
     }
   }
@@ -231,12 +237,13 @@ export class ECCCrypto {
       // 这里需要实现具体的ECDH算法
       // 由于node-forge对ECC支持有限，这里返回一个示例
       return forge.util.encode64('shared_secret_placeholder')
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.ENCRYPTION_FAILED,
         `ECDH key derivation failed: ${error}`,
         'ECC',
-        error
+        error,
       )
     }
   }
@@ -257,14 +264,15 @@ export class ECCCrypto {
       return {
         signature: signatureBase64,
         algorithm: 'ECDSA-SHA256',
-        encoding: 'base64'
+        encoding: 'base64',
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.SIGNATURE_FAILED,
         `ECDSA signing failed: ${error}`,
         'ECC',
-        error
+        error,
       )
     }
   }
@@ -282,10 +290,11 @@ export class ECCCrypto {
       const valid = (publicKeyObj as any).verify(md.digest().bytes(), signatureBytes)
 
       return { valid }
-    } catch (error) {
+    }
+ catch (error) {
       return {
         valid: false,
-        error: `ECDSA verification failed: ${error}`
+        error: `ECDSA verification failed: ${error}`,
       }
     }
   }
@@ -303,12 +312,13 @@ export class KeyUtils {
       const privateKey = forge.pki.privateKeyFromPem(privateKeyPem)
       const publicKey = forge.pki.setRsaPublicKey(privateKey.n, privateKey.e)
       return forge.pki.publicKeyToPem(publicKey)
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.INVALID_KEY,
         `Failed to extract public key: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -320,11 +330,13 @@ export class KeyUtils {
     try {
       if (type === 'public') {
         forge.pki.publicKeyFromPem(key)
-      } else {
+      }
+ else {
         forge.pki.privateKeyFromPem(key)
       }
       return true
-    } catch {
+    }
+ catch {
       return false
     }
   }
@@ -332,29 +344,31 @@ export class KeyUtils {
   /**
    * 获取密钥信息
    */
-  static getKeyInfo(keyPem: string): { type: string; size: number; algorithm: string } {
+  static getKeyInfo(keyPem: string): { type: string, size: number, algorithm: string } {
     try {
       if (keyPem.includes('PUBLIC KEY')) {
         const publicKey = forge.pki.publicKeyFromPem(keyPem)
         return {
           type: 'public',
           size: (publicKey as any).n ? (publicKey as any).n.bitLength() : 0,
-          algorithm: 'RSA'
+          algorithm: 'RSA',
         }
-      } else {
+      }
+ else {
         const privateKey = forge.pki.privateKeyFromPem(keyPem)
         return {
           type: 'private',
           size: (privateKey as any).n ? (privateKey as any).n.bitLength() : 0,
-          algorithm: 'RSA'
+          algorithm: 'RSA',
         }
       }
-    } catch (error) {
+    }
+ catch (error) {
       throw new CryptoError(
         CryptoErrorType.INVALID_KEY,
         `Failed to get key info: ${error}`,
         'RSA',
-        error
+        error,
       )
     }
   }
@@ -373,5 +387,5 @@ export const AsymmetricPlugin: CryptoPlugin = {
 
   async destroy() {
     console.log('[AsymmetricPlugin] Destroyed')
-  }
+  },
 }

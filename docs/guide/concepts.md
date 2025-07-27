@@ -222,9 +222,9 @@ const zero = await crypto.aesEncrypt(data, {
 
 ```typescript
 // 生成不同类型的密钥
-const aesKey = crypto.generateKey('AES', 256)        // AES-256 密钥
-const desKey = crypto.generateKey('DES')             // DES 密钥
-const sm4Key = crypto.generateKey('SM4')             // SM4 密钥
+const aesKey = crypto.generateKey('AES', 256) // AES-256 密钥
+const desKey = crypto.generateKey('DES') // DES 密钥
+const sm4Key = crypto.generateKey('SM4') // SM4 密钥
 
 // 生成非对称密钥对
 const rsaKeyPair = await crypto.generateRSAKeyPair(2048)
