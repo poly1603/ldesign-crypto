@@ -133,7 +133,8 @@
     "build:analyze": "pnpm run build && node ../../tools/scripts/build/bundle-analyzer.js",
     "build:validate": "pnpm run build && node ../../tools/scripts/build/validate-build.js",
     "build:browser-test": "pnpm run build && node ../../tools/scripts/build/browser-tester.js",
-    "build:dev": "node scripts/build.js --dev"
+    "build:dev": "node scripts/build.js --dev",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
@@ -144,7 +145,7 @@
     "vue": "^3.3.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^3.0.0",
+    "@antfu/eslint-config": "^6.0.0",
     "@ldesign/builder": "workspace:*",
     "@playwright/test": "^1.40.1",
     "@rollup/plugin-commonjs": "^25.0.7",
@@ -157,13 +158,13 @@
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "@vue/test-utils": "^2.4.4",
-    "eslint": "^9.0.0",
+    "eslint": "^9.18.0",
     "eslint-plugin-format": "^1.0.2",
     "jsdom": "^24.0.0",
     "rollup": "^4.9.6",
     "rollup-plugin-dts": "^6.1.0",
     "size-limit": "^11.0.0",
-    "typescript": "^5.6.0",
+    "typescript": "^5.7.3",
     "vite": "^5.0.12",
     "vitepress": "^1.6.4",
     "vitest": "^3.2.4",
