@@ -111,7 +111,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "ldesign-builder build",
+    "build": "ldesign-builder build -f esm,cjs,dts",
     "build:watch": "ldesign-builder build --watch",
     "dev": "rollup -c -w",
     "type-check": "vue-tsc --noEmit -p tsconfig.build.json",
