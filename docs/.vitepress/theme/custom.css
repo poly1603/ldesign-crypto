@@ -1,0 +1,51 @@
+/**
+ * VitePress 自定义样式
+ */
+
+:root {
+  --vp-c-brand: #3451b2;
+  --vp-c-brand-light: #5672cd;
+  --vp-c-brand-lighter: #7892e0;
+  --vp-c-brand-dark: #2a408f;
+  --vp-c-brand-darker: #1f2f6c;
+}
+
+/* 代码块样式增强 */
+.vp-doc div[class*='language-'] {
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+/* 表格样式 */
+.vp-doc table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* 警告框样式 */
+.custom-block.tip {
+  border-left-color: var(--vp-c-brand);
+}
+
+/* 链接样式 */
+.vp-doc a {
+  font-weight: 500;
+}
+
+/* 首页样式 */
+.VPHome .name {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--vp-c-brand) 30%, var(--vp-c-brand-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .VPHome .name {
+    font-size: 2rem;
+  }
+}
