@@ -225,6 +225,37 @@ export {
   ValidationUtils,
 } from './utils'
 
+// === 安全工具 ===
+export {
+  clearBuffer,
+  clearString,
+  MemoryCleaner,
+  SecureKey,
+  type SecureKeyOptions,
+  withSecureScope,
+  withSecureScopeSync,
+} from './utils/secure-memory'
+
+export {
+  createTimingSafeCompare,
+  testTimingSafety,
+  timingSafeBase64Equal,
+  timingSafeBufferEqual,
+  timingSafeEqual,
+  timingSafeHexEqual,
+} from './utils/timing-safe'
+
+// === 错误处理工具 ===
+export {
+  createErrorResult,
+  sanitizeErrorMessage,
+  withAsyncErrorHandling,
+  withDecryptErrorHandling,
+  withEncryptErrorHandling,
+  withErrorHandling,
+  type ErrorHandlerOptions,
+} from './utils/error-handler-decorator'
+
 // === 性能基准测试 ===
 export {
   Benchmark,

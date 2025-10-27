@@ -3,8 +3,131 @@ import CryptoJS from 'crypto-js'
 import { ErrorUtils, ValidationUtils } from '../utils'
 
 /**
- * 编码器
- * 优化：使用单例模式，避免重复创建实例
+ * 编码器（单例模式）
+ * 
+ * 提供字符串与常见编码格式之间的转换功能。
+ * 
+ * ## 主要特性
+ * 
+ * ### 支持的编码格式
+ * - **Base64**：标准 Base64 编码（RFC 4648）
+ * - **Base64 URL-Safe**：URL 安全的 Base64 编码
+ * - **Hex**：十六进制编码
+ * - **UTF-8**：默认字符编码
+ * 
+ * ### 性能优化
+ * - **单例模式**：全局共享一个实例，避免重复创建
+ * - **原生 API 优先**：浏览器环境优先使用 btoa/atob（更快）
+ * - **自动降级**：不支持时降级到 CryptoJS 实现
+ * 
+ * ### 兼容性
+ * - **浏览器**：支持现代浏览器和 IE11+
+ * - **Node.js**：完全支持
+ * - **React Native**：支持
+ * 
+ * ## 使用场景
+ * 
+ * - ✅ 加密结果的文本表示（Base64）
+ * - ✅ 密钥和 IV 的十六进制表示
+ * - ✅ URL 参数传递（URL-Safe Base64）
+ * - ✅ 二进制数据的文本存储
+ * 
+ * ## 重要提示
+ * 
+ * ⚠️ **编码不是加密**
+ * - Base64 和 Hex 仅仅是编码方式，**不提供任何安全性**
+ * - 编码后的数据可以轻易解码
+ * - 如需保护数据，必须先加密再编码
+ * 
+ * ## 使用示例
+ * 
+ * ### 基础编码/解码
+ * ```typescript
+ * import { encoding } from '@ldesign/crypto'
+ * 
+ * // Base64 编码
+ * const base64 = encoding.encode('Hello 世界', 'base64')
+ * console.log(base64) // 'SGVsbG8g5LiW55WM'
+ * 
+ * // Base64 解码
+ * const decoded = encoding.decode(base64, 'base64')
+ * console.log(decoded) // 'Hello 世界'
+ * 
+ * // Hex 编码
+ * const hex = encoding.encode('Hello', 'hex')
+ * console.log(hex) // '48656c6c6f'
+ * 
+ * // Hex 解码
+ * const decodedHex = encoding.decode(hex, 'hex')
+ * console.log(decodedHex) // 'Hello'
+ * ```
+ * 
+ * ### 便捷函数
+ * ```typescript
+ * import { base64, hex } from '@ldesign/crypto'
+ * 
+ * // Base64
+ * const encoded = base64.encode('Hello')
+ * const decoded = base64.decode(encoded)
+ * 
+ * // URL-Safe Base64
+ * const urlSafe = base64.encodeUrl('Hello World')
+ * const decodedUrl = base64.decodeUrl(urlSafe)
+ * 
+ * // Hex
+ * const hexEncoded = hex.encode('Hello')
+ * const hexDecoded = hex.decode(hexEncoded)
+ * ```
+ * 
+ * ### 加密结果编码
+ * ```typescript
+ * import { aes, base64 } from '@ldesign/crypto'
+ * 
+ * // 1. 加密（已经是 Base64 格式）
+ * const encrypted = aes.encrypt('敏感数据', 'password')
+ * console.log(encrypted.data) // Base64 密文
+ * 
+ * // 2. 如需转换为 Hex
+ * const hexCiphertext = hex.encode(encrypted.data || '')
+ * 
+ * // 3. 解码回 Base64
+ * const base64Ciphertext = hex.decode(hexCiphertext)
+ * const decrypted = aes.decrypt(base64Ciphertext, 'password')
+ * ```
+ * 
+ * ### URL 传参
+ * ```typescript
+ * import { base64 } from '@ldesign/crypto'
+ * 
+ * // URL-Safe 编码（不含 +/= 字符）
+ * const token = base64.encodeUrl('user:password')
+ * const url = `https://api.example.com/auth?token=${token}`
+ * 
+ * // 解码
+ * const decoded = base64.decodeUrl(token)
+ * console.log(decoded) // 'user:password'
+ * ```
+ * 
+ * ## 技术细节
+ * 
+ * ### Base64 编码原理
+ * - 将 3 个字节（24 位）转换为 4 个 Base64 字符
+ * - 字符集：A-Z, a-z, 0-9, +, /
+ * - 填充字符：=（用于补齐到 4 的倍数）
+ * 
+ * ### Hex 编码原理
+ * - 将每个字节转换为 2 个十六进制字符
+ * - 字符集：0-9, a-f（或 A-F）
+ * - 编码后长度 = 原始长度 × 2
+ * 
+ * ### 性能对比
+ * | 编码方式 | 编码速度 | 空间效率 | 可读性 |
+ * |----------|---------|---------|--------|
+ * | Base64 | 快 | 133% | 中 |
+ * | Hex | 快 | 200% | 高 |
+ * | UTF-8 | 最快 | 100% | 低（二进制） |
+ * 
+ * @see https://datatracker.ietf.org/doc/html/rfc4648
  */
 export class Encoder implements IEncoder {
   private static instance: Encoder | null = null

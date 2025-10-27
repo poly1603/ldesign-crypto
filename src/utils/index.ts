@@ -6,7 +6,41 @@ export * from './advanced-validation'
 /**
  * 字符串转换工具
  *
- * 提供字符串与常见编码（Base64、Hex、Utf8）之间的转换便捷方法。
+ * 提供字符串与常见编码（Base64、Hex、UTF-8）之间的转换便捷方法。
+ * 
+ * ## 主要功能
+ * 
+ * ### 编码转换
+ * - **UTF-8 ⇄ Base64**：字符串与 Base64 相互转换
+ * - **UTF-8 ⇄ Hex**：字符串与十六进制相互转换
+ * - **WordArray ⇄ String**：CryptoJS WordArray 与字符串转换
+ * 
+ * ### 使用场景
+ * - 密钥和 IV 的格式转换
+ * - 加密结果的编码转换
+ * - 二进制数据的文本表示
+ * 
+ * ## 使用示例
+ * 
+ * ```typescript
+ * import { StringUtils } from '@ldesign/crypto'
+ * 
+ * // 字符串转 Base64
+ * const base64 = StringUtils.stringToBase64('Hello 世界')
+ * console.log(base64) // 'SGVsbG8g5LiW55WM'
+ * 
+ * // Base64 转字符串
+ * const str = StringUtils.base64ToString(base64)
+ * console.log(str) // 'Hello 世界'
+ * 
+ * // 字符串转 Hex
+ * const hex = StringUtils.stringToHex('Hello')
+ * console.log(hex) // '48656c6c6f'
+ * 
+ * // Hex 转字符串
+ * const str2 = StringUtils.hexToString(hex)
+ * console.log(str2) // 'Hello'
+ * ```
  */
 export class StringUtils {
   /**
@@ -99,7 +133,97 @@ export class StringUtils {
 }
 
 /**
- * 随机数生成工具
+ * 随机数生成工具（密码学安全）
+ * 
+ * 提供密码学安全的随机数生成功能，用于生成密钥、盐值、IV 等。
+ * 
+ * ## 主要特性
+ * 
+ * ### 密码学安全
+ * - **CSPRNG**：使用密码学安全的伪随机数生成器
+ * - **浏览器**：使用 `crypto.getRandomValues()`
+ * - **Node.js**：使用 `crypto.randomBytes()`
+ * - **不可预测**：无法通过已知输出预测下一个输出
+ * 
+ * ### 支持的格式
+ * - **WordArray**：CryptoJS 原生格式
+ * - **十六进制**：可读的十六进制字符串
+ * - **Base64**：紧凑的 Base64 字符串
+ * 
+ * ## 安全警告
+ * 
+ * ⚠️ **不要使用 Math.random()**
+ * ```typescript
+ * // ❌ 不安全：Math.random() 不是密码学安全的
+ * const key = Math.random().toString(36) // 可预测！
+ * 
+ * // ✅ 安全：使用 RandomUtils
+ * const key = RandomUtils.generateKey(32) // 密码学安全
+ * ```
+ * 
+ * ## 使用示例
+ * 
+ * ### 生成密钥
+ * ```typescript
+ * import { RandomUtils } from '@ldesign/crypto'
+ * 
+ * // AES-256 密钥（32 字节 = 64 个十六进制字符）
+ * const aesKey = RandomUtils.generateKey(32)
+ * console.log(aesKey.length) // 64
+ * 
+ * // AES-128 密钥（16 字节 = 32 个十六进制字符）
+ * const aesKey128 = RandomUtils.generateKey(16)
+ * console.log(aesKey128.length) // 32
+ * ```
+ * 
+ * ### 生成 IV
+ * ```typescript
+ * // AES IV（16 字节）
+ * const iv = RandomUtils.generateIV(16)
+ * console.log(iv.length) // 32（十六进制）
+ * 
+ * // 使用生成的 IV
+ * import { aes } from '@ldesign/crypto'
+ * const encrypted = aes.encrypt('data', 'key', { iv })
+ * ```
+ * 
+ * ### 生成盐值
+ * ```typescript
+ * // 密码哈希盐值（16 字节）
+ * const salt = RandomUtils.generateSalt(16)
+ * 
+ * // 用于密钥派生
+ * import { deriveKey } from '@ldesign/crypto'
+ * const derivedKey = await deriveKey('password', {
+ *   salt,
+ *   iterations: 100000
+ * })
+ * ```
+ * 
+ * ### 不同编码格式
+ * ```typescript
+ * // 十六进制（默认）
+ * const hexRandom = RandomUtils.generateRandomString(16, 'hex')
+ * 
+ * // Base64
+ * const base64Random = RandomUtils.generateRandomString(16, 'base64')
+ * 
+ * // WordArray（CryptoJS 原生）
+ * const wordArray = RandomUtils.generateRandomBytes(16)
+ * ```
+ * 
+ * ## 技术细节
+ * 
+ * ### 熵源
+ * - **浏览器**：使用操作系统的熵池
+ * - **Node.js**：使用 /dev/urandom 或 CryptGenRandom
+ * - **熵质量**：满足密码学安全要求
+ * 
+ * ### 性能
+ * - 生成 32 字节随机数：~0.01 ms
+ * - 无性能瓶颈（直接调用系统 API）
+ * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
  */
 export class RandomUtils {
   /**
@@ -163,6 +287,81 @@ export class RandomUtils {
 
 /**
  * 验证工具
+ * 
+ * 提供各种数据验证功能，用于参数校验和数据格式检查。
+ * 
+ * ## 主要功能
+ * 
+ * ### 格式验证
+ * - **Base64 验证**：检查是否为有效的 Base64 字符串
+ * - **Hex 验证**：检查是否为有效的十六进制字符串
+ * - **密钥长度验证**：检查密钥长度是否符合要求
+ * 
+ * ### 空值检查
+ * - **isEmpty**：安全的空值检查（处理 null、undefined、空白字符串）
+ * 
+ * ## 使用示例
+ * 
+ * ```typescript
+ * import { ValidationUtils } from '@ldesign/crypto'
+ * 
+ * // 1. 空值检查
+ * ValidationUtils.isEmpty('') // true
+ * ValidationUtils.isEmpty('  ') // true
+ * ValidationUtils.isEmpty('hello') // false
+ * ValidationUtils.isEmpty(null) // true
+ * 
+ * // 2. Base64 验证
+ * ValidationUtils.isValidBase64('SGVsbG8=') // true
+ * ValidationUtils.isValidBase64('invalid!@#') // false
+ * 
+ * // 3. Hex 验证
+ * ValidationUtils.isValidHex('48656c6c6f') // true
+ * ValidationUtils.isValidHex('xyz') // false
+ * 
+ * // 4. 密钥长度验证
+ * ValidationUtils.validateAESKeyLength('12345678', 128) // true/false
+ * ```
+ * 
+ * ## 实际应用
+ * 
+ * ### 参数验证
+ * ```typescript
+ * function encrypt(data: string, key: string) {
+ *   // 验证参数
+ *   if (ValidationUtils.isEmpty(data)) {
+ *     throw new Error('Data cannot be empty')
+ *   }
+ *   
+ *   if (ValidationUtils.isEmpty(key)) {
+ *     throw new Error('Key cannot be empty')
+ *   }
+ *   
+ *   // 验证密钥格式
+ *   if (!ValidationUtils.isValidHex(key)) {
+ *     console.warn('Key is not hex, will derive using PBKDF2')
+ *   }
+ *   
+ *   // 继续加密...
+ * }
+ * ```
+ * 
+ * ### IV 验证
+ * ```typescript
+ * function encryptWithIV(data: string, key: string, iv: string) {
+ *   // 验证 IV 格式
+ *   if (!ValidationUtils.isValidHex(iv)) {
+ *     throw new Error('IV must be a hex string')
+ *   }
+ *   
+ *   // 验证 IV 长度（16 字节 = 32 个十六进制字符）
+ *   if (iv.length !== 32) {
+ *     throw new Error('IV must be 16 bytes (32 hex characters)')
+ *   }
+ *   
+ *   // 继续加密...
+ * }
+ * ```
  */
 export class ValidationUtils {
   /**
@@ -242,6 +441,86 @@ export class ValidationUtils {
 
 /**
  * 错误处理工具
+ * 
+ * 提供统一的错误创建和处理功能，确保错误信息的一致性和安全性。
+ * 
+ * ## 主要功能
+ * 
+ * ### 错误创建
+ * - **createEncryptionError**：创建加密错误
+ * - **createDecryptionError**：创建解密错误
+ * - **createHashError**：创建哈希错误
+ * - **createValidationError**：创建验证错误
+ * 
+ * ### 错误处理
+ * - **handleError**：统一的错误处理
+ * - **自动错误分类**：根据错误类型自动分类
+ * - **安全的错误消息**：不泄露敏感信息
+ * 
+ * ## 安全考虑
+ * 
+ * ### 不要泄露敏感信息
+ * ```typescript
+ * // ❌ 不安全：泄露密钥
+ * throw new Error(`Encryption failed with key: ${key}`)
+ * 
+ * // ✅ 安全：不泄露敏感信息
+ * throw ErrorUtils.createEncryptionError('Encryption failed', 'AES')
+ * ```
+ * 
+ * ### 统一的错误响应
+ * ```typescript
+ * // 所有算法返回一致的错误格式
+ * const result = aes.encrypt('data', '')
+ * if (!result.success) {
+ *   console.error(result.error) // 标准化的错误消息
+ * }
+ * ```
+ * 
+ * ## 使用示例
+ * 
+ * ### 创建错误
+ * ```typescript
+ * import { ErrorUtils } from '@ldesign/crypto'
+ * 
+ * // 加密错误
+ * throw ErrorUtils.createEncryptionError('Invalid key', 'AES')
+ * // Error: Encryption Error (AES): Invalid key
+ * 
+ * // 解密错误
+ * throw ErrorUtils.createDecryptionError('Invalid ciphertext', 'RSA')
+ * // Error: Decryption Error (RSA): Invalid ciphertext
+ * 
+ * // 哈希错误
+ * throw ErrorUtils.createHashError('Unsupported algorithm', 'MD5')
+ * // Error: Hash Error (MD5): Unsupported algorithm
+ * ```
+ * 
+ * ### 错误处理
+ * ```typescript
+ * try {
+ *   const encrypted = aes.encrypt('data', 'key')
+ * } catch (error) {
+ *   const message = ErrorUtils.handleError(error, 'AES Encryption')
+ *   console.error(message)
+ * }
+ * ```
+ * 
+ * ## 错误类型
+ * 
+ * 所有错误都设置了 `name` 属性，便于区分：
+ * 
+ * ```typescript
+ * try {
+ *   // ...
+ * } catch (error) {
+ *   if (error.name === 'EncryptionError') {
+ *     console.error('加密失败')
+ *   } else if (error.name === 'DecryptionError') {
+ *     console.error('解密失败')
+ *   }
+ * }
+ * ```
  */
 export class ErrorUtils {
   /**
@@ -357,3 +636,6 @@ export * from './object-pool'
 export * from './performance-logger'
 export * from './rate-limiter'
 export * from './secure-storage'
+export * from './secure-memory'
+export * from './timing-safe'
+export * from './error-handler-decorator'

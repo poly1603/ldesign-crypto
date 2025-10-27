@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/crypto",
-  "version": "0.1.0",
-  "description": "A comprehensive cryptographic library with Vue 3 integration for modern JavaScript applications",
+  "version": "2.0.0",
+  "description": "高性能加密库 - 支持 AES/RSA/哈希/HMAC，硬件加速，流式处理，安全增强 | A comprehensive cryptographic library with Vue 3 integration for modern JavaScript applications",
   "keywords": [
     "crypto",
     "encryption",

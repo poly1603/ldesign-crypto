@@ -82,3 +82,20 @@ export {
   // 3DES 算法
   TripleDESEncryptor,
 } from './tripledes'
+
+// === 现代加密算法 ===
+export {
+  chacha20poly1305,
+  // ChaCha20-Poly1305 AEAD
+  ChaCha20Poly1305Encryptor,
+  type ChaCha20Poly1305EncryptResult,
+  type ChaCha20Poly1305Options,
+} from './chacha20-poly1305'
+
+// === WebCrypto API 适配器（硬件加速） ===
+export {
+  isWebCryptoSupported,
+  webcrypto,
+  // WebCrypto AES
+  WebCryptoAES,
+} from './webcrypto-adapter'

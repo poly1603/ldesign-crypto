@@ -18,3 +18,10 @@ export type {
   StreamEncryptionResult,
   StreamProgress,
 } from './types'
+
+// 导出流式加密实现
+export {
+  StreamEncryptor,
+  streamDecrypt,
+  streamEncrypt,
+} from './file-encryptor'
