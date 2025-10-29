@@ -1,0 +1,43 @@
+{
+  "name": "@ldesign/crypto-workers",
+  "version": "2.0.0",
+  "description": "Worker thread pool for @ldesign/crypto - Parallel encryption processing",
+  "keywords": [
+    "crypto",
+    "workers",
+    "parallel",
+    "web-workers",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "files": ["README.md", "LICENSE", "package.json", "es", "lib"],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "lint": "eslint . --fix",
+    "clean": "rimraf es lib"
+  },
+  "dependencies": {
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  }
+}
+
+

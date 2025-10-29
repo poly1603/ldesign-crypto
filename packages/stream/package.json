@@ -1,0 +1,43 @@
+{
+  "name": "@ldesign/crypto-stream",
+  "version": "2.0.0",
+  "description": "Stream encryption for @ldesign/crypto - Process large files without memory overflow",
+  "keywords": [
+    "crypto",
+    "stream",
+    "file-encryption",
+    "large-files",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "files": ["README.md", "LICENSE", "package.json", "es", "lib"],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "lint": "eslint . --fix",
+    "clean": "rimraf es lib"
+  },
+  "dependencies": {
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  }
+}
+
+

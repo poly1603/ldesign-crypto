@@ -1,0 +1,70 @@
+{
+  "name": "@ldesign/crypto-react",
+  "version": "2.0.0",
+  "description": "React adapter for @ldesign/crypto-core - Hooks, contexts, and components",
+  "keywords": [
+    "react",
+    "crypto",
+    "encryption",
+    "hooks",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./hooks": {
+      "types": "./es/hooks/index.d.ts",
+      "import": "./es/hooks/index.js",
+      "require": "./lib/hooks/index.cjs"
+    },
+    "./hooks/*": {
+      "types": "./es/hooks/*.d.ts",
+      "import": "./es/hooks/*.js",
+      "require": "./lib/hooks/*.cjs"
+    },
+    "./components": {
+      "types": "./es/components/index.d.ts",
+      "import": "./es/components/index.js",
+      "require": "./lib/components/index.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "files": ["README.md", "LICENSE", "package.json", "es", "lib", "dist"],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf es lib dist"
+  },
+  "dependencies": {
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@testing-library/react": "^14.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^9.18.0",
+    "jsdom": "^24.0.0",
+    "react": "^18.2.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  }
+}

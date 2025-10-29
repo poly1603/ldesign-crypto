@@ -1,0 +1,98 @@
+{
+  "name": "@ldesign/crypto-core",
+  "version": "2.0.0",
+  "description": "Framework-agnostic crypto core - AES, RSA, Hash, HMAC algorithms with high performance",
+  "keywords": [
+    "crypto",
+    "encryption",
+    "decryption",
+    "hash",
+    "aes",
+    "rsa",
+    "hmac",
+    "framework-agnostic",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./algorithms": {
+      "types": "./es/algorithms/index.d.ts",
+      "import": "./es/algorithms/index.js",
+      "require": "./lib/algorithms/index.cjs"
+    },
+    "./algorithms/*": {
+      "types": "./es/algorithms/*.d.ts",
+      "import": "./es/algorithms/*.js",
+      "require": "./lib/algorithms/*.cjs"
+    },
+    "./core": {
+      "types": "./es/core/index.d.ts",
+      "import": "./es/core/index.js",
+      "require": "./lib/core/index.cjs"
+    },
+    "./core/*": {
+      "types": "./es/core/*.d.ts",
+      "import": "./es/core/*.js",
+      "require": "./lib/core/*.cjs"
+    },
+    "./types": {
+      "types": "./es/types/index.d.ts",
+      "import": "./es/types/index.js",
+      "require": "./lib/types/index.cjs"
+    },
+    "./types/*": {
+      "types": "./es/types/*.d.ts",
+      "import": "./es/types/*.js",
+      "require": "./lib/types/*.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf es lib dist"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "node-forge": "^1.3.1",
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^22.0.0",
+    "@types/node-forge": "^1.3.14",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  }
+}
+
+

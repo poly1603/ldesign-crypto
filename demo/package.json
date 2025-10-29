@@ -1,0 +1,35 @@
+{
+  "name": "@ldesign/crypto-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LDesign Crypto 演示项目 - 基于 @ldesign/launcher",
+  "keywords": [
+    "crypto",
+    "demo",
+    "vue3",
+    "ldesign"
+  ],
+  "scripts": {
+    "dev": "launcher dev",
+    "build": "launcher build",
+    "preview": "launcher preview",
+    "lint": "eslint . --fix",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ldesign/crypto": "workspace:*",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@ldesign/launcher": "workspace:*",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vue/tsconfig": "^0.5.1",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.3",
+    "vite": "^5.4.2",
+    "vue-tsc": "^3.0.5"
+  }
+}
+
+

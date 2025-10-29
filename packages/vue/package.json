@@ -1,0 +1,76 @@
+{
+  "name": "@ldesign/crypto-vue",
+  "version": "2.0.0",
+  "description": "Vue 3 adapter for @ldesign/crypto-core - Composables, plugins, and directives",
+  "keywords": [
+    "vue3",
+    "crypto",
+    "encryption",
+    "composables",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./composables": {
+      "types": "./es/composables/index.d.ts",
+      "import": "./es/composables/index.js",
+      "require": "./lib/composables/index.cjs"
+    },
+    "./composables/*": {
+      "types": "./es/composables/*.d.ts",
+      "import": "./es/composables/*.js",
+      "require": "./lib/composables/*.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint . --fix",
+    "type-check": "vue-tsc --noEmit",
+    "clean": "rimraf es lib dist"
+  },
+  "dependencies": {
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0",
+    "@ldesign/crypto-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vue/test-utils": "^2.4.4",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4",
+    "vue": "^3.5.18",
+    "vue-tsc": "^3.0.5"
+  }
+}
+
+

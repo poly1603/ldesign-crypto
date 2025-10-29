@@ -1,0 +1,63 @@
+{
+  "name": "@ldesign/crypto-utils",
+  "version": "2.0.0",
+  "description": "Utility functions for @ldesign/crypto - Password strength, key derivation, secure storage",
+  "keywords": [
+    "crypto",
+    "utils",
+    "password",
+    "key-derivation",
+    "secure-storage",
+    "typescript"
+  ],
+  "author": "ldesign",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./es/index.d.ts",
+      "import": "./es/index.js",
+      "require": "./lib/index.cjs"
+    },
+    "./*": {
+      "types": "./es/*.d.ts",
+      "import": "./es/*.js",
+      "require": "./lib/*.cjs"
+    }
+  },
+  "main": "./lib/index.cjs",
+  "module": "./es/index.js",
+  "types": "./es/index.d.ts",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "es",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "build:watch": "ldesign-builder build --watch",
+    "dev": "ldesign-builder build --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf es lib dist"
+  },
+  "dependencies": {
+    "@ldesign/crypto-core": "workspace:*",
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.18.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.2.4"
+  }
+}
+
+
