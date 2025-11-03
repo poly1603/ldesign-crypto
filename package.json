@@ -113,13 +113,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm -r --filter './packages/*' build",
+    "build": "ldesign-builder build -f esm,cjs,dts",
     "build:core": "pnpm --filter @ldesign/crypto-core build",
     "build:vue": "pnpm --filter @ldesign/crypto-vue build",
     "build:utils": "pnpm --filter @ldesign/crypto-utils build",
     "build:stream": "pnpm --filter @ldesign/crypto-stream build",
     "build:workers": "pnpm --filter @ldesign/crypto-workers build",
-    "dev": "pnpm -r --filter './packages/*' --parallel dev",
+    "dev": "ldesign-builder build -f esm,cjs,dts --watch",
     "demo": "pnpm --filter @ldesign/crypto-demo dev",
     "demo:build": "pnpm --filter @ldesign/crypto-demo build",
     "test": "pnpm -r test",
