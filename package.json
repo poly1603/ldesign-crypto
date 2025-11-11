@@ -1,7 +1,6 @@
 {
   "name": "@ldesign/crypto",
   "version": "2.0.0",
-  "private": true,
   "description": "高性能加密库 - 支持 AES/RSA/哈希/HMAC，硬件加速，流式处理，安全增强 | A comprehensive cryptographic library with Vue 3 integration for modern JavaScript applications",
   "keywords": [
     "crypto",
@@ -87,6 +86,11 @@
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
       "require": "./lib/utils/*.cjs"
+    },
+    "./wasm/*": {
+      "types": "./es/wasm/*.d.ts",
+      "import": "./es/wasm/*.js",
+      "require": "./lib/wasm/*.cjs"
     },
     "./workers": {
       "types": "./es/workers/index.d.ts",
@@ -174,6 +178,7 @@
       "limit": "100 KB"
     }
   ],
+  "private": true,
   "peerDependenciesMeta": {
     "vue": {
       "optional": true
