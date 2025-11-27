@@ -12,6 +12,7 @@ export {
   useHash,
   useKeyManager,
   useSignature,
+  useWorker,
 } from './composables'
 
 // === Plugin ===

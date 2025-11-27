@@ -3,4 +3,5 @@ export { useEncryption } from './useEncryption'
 export { useHash } from './useHash'
 export { useKeyManager } from './useKeyManager'
 export { useSignature } from './useSignature'
+export { useWorker } from './useWorker'
 

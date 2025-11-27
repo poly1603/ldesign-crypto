@@ -1,17 +1,17 @@
 import { ref } from 'vue'
-import { encrypt, decrypt } from '@ldesign/crypto-core'
-import type { EncryptionOptions } from '@ldesign/crypto-core'
+import { aes } from '@ldesign/crypto-core'
+import type { AESOptions } from '@ldesign/crypto-core'
 
 export function useCrypto() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const encryptFn = async (data: string, key: string, options?: EncryptionOptions) => {
+  const encryptFn = async (data: string, key: string, options?: AESOptions) => {
     loading.value = true
     error.value = null
 
     try {
-      const result = await encrypt.aes(data, key, options)
+      const result = aes.encrypt(data, key, options)
       if (result.success && result.data) {
         return result.data
       }
@@ -25,12 +25,12 @@ export function useCrypto() {
     }
   }
 
-  const decryptFn = async (data: string, key: string, options?: EncryptionOptions) => {
+  const decryptFn = async (data: string, key: string, options?: AESOptions) => {
     loading.value = true
     error.value = null
 
     try {
-      const result = await decrypt.aes(data, key, options)
+      const result = aes.decrypt(data, key, options)
       if (result.success && result.data) {
         return result.data
       }

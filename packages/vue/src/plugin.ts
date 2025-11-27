@@ -1,5 +1,5 @@
 import type { App } from 'vue'
-import { encrypt, decrypt, hash } from '@ldesign/crypto-core'
+import { encrypt, decrypt, hashInstance, aes, rsa } from '@ldesign/crypto-core'
 
 export interface CryptoPluginOptions {
   defaultAlgorithm?: string
@@ -8,7 +8,9 @@ export interface CryptoPluginOptions {
 export interface GlobalCrypto {
   encrypt: typeof encrypt
   decrypt: typeof decrypt
-  hash: typeof hash
+  hash: typeof hashInstance
+  aes: typeof aes
+  rsa: typeof rsa
 }
 
 export const CryptoPlugin = {
@@ -16,7 +18,9 @@ export const CryptoPlugin = {
     const crypto: GlobalCrypto = {
       encrypt,
       decrypt,
-      hash,
+      hash: hashInstance,
+      aes,
+      rsa,
     }
 
     app.config.globalProperties.$crypto = crypto

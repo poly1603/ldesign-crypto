@@ -1,25 +1,101 @@
 /**
- * @ldesign/crypto-core/algorithms
- * 算法实现模块
+ * 算法模块导出
+ *
+ * 提供所有加密算法的实现，包括：
+ * - 对称加密：AES、DES、3DES、Blowfish
+ * - 非对称加密：RSA
+ * - 哈希算法：MD5、SHA 系列、HMAC
+ * - 编码算法：Base64、Hex
  */
 
-// AES 算法
-export { AESEncryptor, aes } from './aes'
+// === 类型定义 ===
+export type {
+  // 算法选项类型
+  AESOptions,
+  BlowfishOptions,
+  DecryptResult,
+  DESOptions,
+  EncodingType,
+  // 核心结果类型
+  EncryptResult,
+  // 其他类型
+  HashAlgorithm,
+  HashOptions,
+  HashResult,
+  HMACAlgorithm,
+  IEncoder,
+  // 接口类型
+  IEncryptor,
+  IHasher,
+  RSAKeyPair,
+  RSAOptions,
+  TripleDESOptions,
+} from '../types'
 
-// RSA 算法
-export { RSAEncryptor, rsa } from './rsa'
+// === 对称加密算法 ===
+export {
+  aes,
+  // AES 算法
+  AESEncryptor,
+} from './aes'
 
-// DES 系列算法
-export { DESEncryptor, des } from './des'
-export { TripleDESEncryptor, des3, tripledes } from './tripledes'
+export {
+  blowfish,
+  // Blowfish 算法
+  BlowfishEncryptor,
+} from './blowfish'
 
-// Blowfish 算法
-export { BlowfishEncryptor, blowfish } from './blowfish'
+export {
+  des,
+  // DES 算法
+  DESEncryptor,
+} from './des'
 
-// 编码算法
-export { Encoder, encoding } from './encoding'
-export { base64, hex } from './encoding'
+// === 编码算法 ===
+export {
+  base64,
+  // 编码器和便捷函数
+  Encoder,
+  encoding,
+  hex,
+} from './encoding'
 
-// 哈希算法
-export { Hasher, HMACHasher } from './hash'
+// === 哈希算法 ===
+export {
+  hash,
+  // 哈希和 HMAC
+  Hasher,
+  hmac,
+  HMACHasher,
+} from './hash'
 
+// === 非对称加密算法 ===
+export {
+  rsa,
+  // RSA 算法
+  RSAEncryptor,
+} from './rsa'
+
+export {
+  des3,
+  tripledes,
+  // 3DES 算法
+  TripleDESEncryptor,
+} from './tripledes'
+
+// === 现代加密算法 ===
+export {
+  chacha20poly1305,
+  // ChaCha20-Poly1305 AEAD
+  ChaCha20Poly1305Encryptor,
+  type ChaCha20Poly1305EncryptResult,
+  type ChaCha20Poly1305Options,
+} from './chacha20-poly1305'
+
+// === WebCrypto API 适配器（硬件加速） ===
+export {
+  isWebCryptoSupported,
+  webcrypto,
+  // WebCrypto AES
+  WebCryptoAES,
+} from './webcrypto-adapter'

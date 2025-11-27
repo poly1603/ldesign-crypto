@@ -28,6 +28,11 @@
       "types": "./es/composables/*.d.ts",
       "import": "./es/composables/*.js",
       "require": "./lib/composables/*.cjs"
+    },
+    "./__tests__/*": {
+      "types": "./es/__tests__/*.d.ts",
+      "import": "./es/__tests__/*.js",
+      "require": "./lib/__tests__/*.cjs"
     }
   },
   "main": "./lib/index.cjs",
@@ -72,5 +77,3 @@
     "vue-tsc": "^3.0.5"
   }
 }
-
-
