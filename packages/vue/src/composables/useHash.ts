@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { hashInstance, hmacInstance, type HashAlgorithm } from '@ldesign/crypto-core'
+import { hash as hashFn, hmac as hmacFn, type HashAlgorithm } from '@ldesign/crypto-core'
 
 export function useHash() {
   const loading = ref(false)
@@ -9,8 +9,27 @@ export function useHash() {
     loading.value = true
     error.value = null
     try {
-      const result = hashInstance.hash(data, algorithm)
-      return result.success ? result.hash : null
+      let result: string
+      switch (algorithm) {
+        case 'MD5':
+          result = hashFn.md5(data)
+          break
+        case 'SHA1':
+          result = hashFn.sha1(data)
+          break
+        case 'SHA256':
+          result = hashFn.sha256(data)
+          break
+        case 'SHA384':
+          result = hashFn.sha384(data)
+          break
+        case 'SHA512':
+          result = hashFn.sha512(data)
+          break
+        default:
+          result = hashFn.sha256(data)
+      }
+      return result
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Hash failed'
       return null
@@ -19,11 +38,11 @@ export function useHash() {
     }
   }
 
-  const md5 = async (data: string) => hash(data, 'MD5')
-  const sha1 = async (data: string) => hash(data, 'SHA1')
-  const sha256 = async (data: string) => hash(data, 'SHA256')
-  const sha384 = async (data: string) => hash(data, 'SHA384')
-  const sha512 = async (data: string) => hash(data, 'SHA512')
+  const md5 = async (data: string) => hashFn.md5(data)
+  const sha1 = async (data: string) => hashFn.sha1(data)
+  const sha256 = async (data: string) => hashFn.sha256(data)
+  const sha384 = async (data: string) => hashFn.sha384(data)
+  const sha512 = async (data: string) => hashFn.sha512(data)
 
   const hmac = async (data: string, key: string, algorithm: HashAlgorithm = 'SHA256') => {
     loading.value = true
@@ -32,22 +51,22 @@ export function useHash() {
       let result: string
       switch (algorithm) {
         case 'MD5':
-          result = hmacInstance.md5(data, key)
+          result = hmacFn.md5(data, key)
           break
         case 'SHA1':
-          result = hmacInstance.sha1(data, key)
+          result = hmacFn.sha1(data, key)
           break
         case 'SHA256':
-          result = hmacInstance.sha256(data, key)
+          result = hmacFn.sha256(data, key)
           break
         case 'SHA384':
-          result = hmacInstance.sha384(data, key)
+          result = hmacFn.sha384(data, key)
           break
         case 'SHA512':
-          result = hmacInstance.sha512(data, key)
+          result = hmacFn.sha512(data, key)
           break
         default:
-          result = hmacInstance.sha256(data, key)
+          result = hmacFn.sha256(data, key)
       }
       return result
     } catch (err) {

@@ -21,88 +21,98 @@
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+      "require": "./lib/index.cjs",
+      "default": "./es/index.js"
     },
     "./algorithms": {
       "types": "./es/algorithms/index.d.ts",
       "import": "./es/algorithms/index.js",
-      "require": "./lib/algorithms/index.cjs"
+      "require": "./lib/algorithms/index.cjs",
+      "default": "./es/algorithms/index.js"
     },
     "./algorithms/*": {
       "types": "./es/algorithms/*.d.ts",
       "import": "./es/algorithms/*.js",
-      "require": "./lib/algorithms/*.cjs"
+      "require": "./lib/algorithms/*.cjs",
+      "default": "./es/algorithms/*.js"
     },
     "./core": {
       "types": "./es/core/index.d.ts",
       "import": "./es/core/index.js",
-      "require": "./lib/core/index.cjs"
+      "require": "./lib/core/index.cjs",
+      "default": "./es/core/index.js"
     },
     "./core/*": {
       "types": "./es/core/*.d.ts",
       "import": "./es/core/*.js",
-      "require": "./lib/core/*.cjs"
+      "require": "./lib/core/*.cjs",
+      "default": "./es/core/*.js"
     },
     "./stream": {
       "types": "./es/stream/index.d.ts",
       "import": "./es/stream/index.js",
-      "require": "./lib/stream/index.cjs"
+      "require": "./lib/stream/index.cjs",
+      "default": "./es/stream/index.js"
     },
     "./stream/*": {
       "types": "./es/stream/*.d.ts",
       "import": "./es/stream/*.js",
-      "require": "./lib/stream/*.cjs"
+      "require": "./lib/stream/*.cjs",
+      "default": "./es/stream/*.js"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs"
+      "require": "./lib/types/index.cjs",
+      "default": "./es/types/index.js"
     },
     "./types/*": {
       "types": "./es/types/*.d.ts",
       "import": "./es/types/*.js",
-      "require": "./lib/types/*.cjs"
+      "require": "./lib/types/*.cjs",
+      "default": "./es/types/*.js"
     },
     "./utils": {
       "types": "./es/utils/index.d.ts",
       "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
+      "require": "./lib/utils/index.cjs",
+      "default": "./es/utils/index.js"
     },
     "./utils/*": {
       "types": "./es/utils/*.d.ts",
       "import": "./es/utils/*.js",
-      "require": "./lib/utils/*.cjs"
+      "require": "./lib/utils/*.cjs",
+      "default": "./es/utils/*.js"
     },
     "./wasm/*": {
       "types": "./es/wasm/*.d.ts",
       "import": "./es/wasm/*.js",
-      "require": "./lib/wasm/*.cjs"
+      "require": "./lib/wasm/*.cjs",
+      "default": "./es/wasm/*.js"
     },
     "./workers": {
       "types": "./es/workers/index.d.ts",
       "import": "./es/workers/index.js",
-      "require": "./lib/workers/index.cjs"
+      "require": "./lib/workers/index.cjs",
+      "default": "./es/workers/index.js"
     },
     "./workers/*": {
       "types": "./es/workers/*.d.ts",
       "import": "./es/workers/*.js",
-      "require": "./lib/workers/*.cjs"
+      "require": "./lib/workers/*.cjs",
+      "default": "./es/workers/*.js"
     },
-    "./__tests__/*": {
-      "types": "./es/__tests__/*.d.ts",
-      "import": "./es/__tests__/*.js",
-      "require": "./lib/__tests__/*.cjs"
-    }
+    "./package.json": "./package.json"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
   "types": "./es/index.d.ts",
-  "unpkg": "./dist/index.min.js",
-  "jsdelivr": "./dist/index.min.js",
+  "unpkg": "./dist/index.js",
+  "jsdelivr": "./dist/index.js",
   "files": [
     "README.md",
     "LICENSE",
-    "package.json",
+    "CHANGELOG.md",
     "es",
     "lib",
     "dist"
@@ -132,5 +142,7 @@
     "eslint": "^9.18.0",
     "typescript": "^5.7.3",
     "vitest": "^3.2.4"
-  }
+  },
+  "typings": "./es/index.d.ts",
+  "browser": "./dist/index.js"
 }

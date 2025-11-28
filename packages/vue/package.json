@@ -17,33 +17,32 @@
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+      "require": "./lib/index.cjs",
+      "default": "./es/index.js"
     },
     "./composables": {
       "types": "./es/composables/index.d.ts",
       "import": "./es/composables/index.js",
-      "require": "./lib/composables/index.cjs"
+      "require": "./lib/composables/index.cjs",
+      "default": "./es/composables/index.js"
     },
     "./composables/*": {
       "types": "./es/composables/*.d.ts",
       "import": "./es/composables/*.js",
-      "require": "./lib/composables/*.cjs"
+      "require": "./lib/composables/*.cjs",
+      "default": "./es/composables/*.js"
     },
-    "./__tests__/*": {
-      "types": "./es/__tests__/*.d.ts",
-      "import": "./es/__tests__/*.js",
-      "require": "./lib/__tests__/*.cjs"
-    }
+    "./package.json": "./package.json"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
   "types": "./es/index.d.ts",
-  "unpkg": "./dist/index.min.js",
-  "jsdelivr": "./dist/index.min.js",
+  "unpkg": "./dist/index.js",
+  "jsdelivr": "./dist/index.js",
   "files": [
     "README.md",
     "LICENSE",
-    "package.json",
+    "CHANGELOG.md",
     "es",
     "lib",
     "dist"
@@ -75,5 +74,7 @@
     "vitest": "^3.2.4",
     "vue": "^3.5.18",
     "vue-tsc": "^3.0.5"
-  }
+  },
+  "typings": "./es/index.d.ts",
+  "browser": "./dist/index.js"
 }
