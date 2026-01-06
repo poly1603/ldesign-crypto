@@ -639,3 +639,25 @@ export * from './secure-storage'
 export * from './secure-memory'
 export * from './timing-safe'
 export * from './error-handler-decorator'
+
+// === 序列化工具 ===
+export {
+  deserializeEncryptResult,
+  encryptResultToString,
+  EncryptResultSerializer,
+  serializeEncryptResult,
+  type SerializationFormat,
+  type SerializationOptions,
+  stringToEncryptResult,
+} from './serialization'
+
+// === 密钥验证工具 ===
+export {
+  generateSecureKey,
+  isKeySuitableFor,
+  KeyValidator,
+  type KeyType,
+  type KeyValidationOptions,
+  type KeyValidationResult,
+  validateKey,
+} from './key-validation'

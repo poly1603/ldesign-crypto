@@ -225,6 +225,40 @@ export {
   ValidationUtils,
 } from './utils'
 
+// === 序列化工具 ===
+export {
+  deserializeEncryptResult,
+  encryptResultToString,
+  EncryptResultSerializer,
+  serializeEncryptResult,
+  type SerializationFormat,
+  type SerializationOptions,
+  stringToEncryptResult,
+} from './utils/serialization'
+
+// === 密钥验证工具 ===
+export {
+  generateSecureKey,
+  isKeySuitableFor,
+  KeyValidator,
+  type KeyType,
+  type KeyValidationOptions,
+  type KeyValidationResult,
+  validateKey,
+} from './utils/key-validation'
+
+// === WebCrypto API ===
+export {
+  AESGCMEncryptor,
+  type AESGCMEncryptResult,
+  type AESGCMOptions,
+  isWebCryptoSupported,
+  webcrypto,
+  WebCryptoAES,
+  type WebCryptoDecryptResult,
+  type WebCryptoEncryptResult,
+} from './algorithms/webcrypto-adapter'
+
 // === 安全工具 ===
 export {
   clearBuffer,

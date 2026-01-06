@@ -42,7 +42,62 @@
 
 import type { AESOptions, DecryptResult, EncryptResult } from '../types'
 import { aes as fallbackAES } from './aes'
-import { CONSTANTS, ErrorUtils, RandomUtils } from '../utils'
+import { CONSTANTS } from '../utils'
+
+/**
+ * WebCrypto 加密结果扩展类型
+ */
+export interface WebCryptoEncryptResult extends EncryptResult {
+  /** 是否使用了 WebCrypto API */
+  usingWebCrypto: boolean
+  /** 执行时间（毫秒） */
+  performance?: number
+  /** AES-GCM 认证标签（仅 GCM 模式） */
+  authTag?: string
+}
+
+/**
+ * WebCrypto 解密结果扩展类型
+ */
+export interface WebCryptoDecryptResult extends DecryptResult {
+  /** 是否使用了 WebCrypto API */
+  usingWebCrypto: boolean
+  /** 认证标签是否验证通过（仅 GCM 模式） */
+  authVerified?: boolean
+}
+
+/**
+ * AES-GCM 特定选项
+ */
+export interface AESGCMOptions {
+  /** 密钥长度（128/192/256） */
+  keySize?: 128 | 192 | 256
+  /** 初始化向量（十六进制，默认自动生成 12 字节） */
+  iv?: string
+  /** 附加认证数据（Additional Authenticated Data） */
+  additionalData?: string
+  /** 认证标签长度（位），默认 128 */
+  tagLength?: 96 | 104 | 112 | 120 | 128
+}
+
+/**
+ * AES-GCM 加密结果
+ */
+export interface AESGCMEncryptResult {
+  success: boolean
+  /** Base64 编码的密文（包含认证标签） */
+  data?: string
+  /** 算法 */
+  algorithm: 'AES-GCM'
+  /** 密钥长度 */
+  keySize: number
+  /** 十六进制 IV */
+  iv: string
+  /** 错误信息 */
+  error?: string
+  /** 是否使用 WebCrypto */
+  usingWebCrypto: boolean
+}
 
 /**
  * 检测 WebCrypto API 支持
@@ -496,6 +551,328 @@ export class WebCryptoAES {
  * console.log(decrypted.data) // 'Hello'
  * ```
  */
+/**
+ * AES-GCM 认证加密器
+ * 
+ * AES-GCM (Galois/Counter Mode) 是一种认证加密模式（AEAD），
+ * 同时提供数据加密和完整性验证。
+ * 
+ * ## 优势
+ * 
+ * - **认证加密**：自动验证数据完整性，防篁改
+ * - **高性能**：可并行处理，硬件加速效果最好
+ * - **广泛支持**：TLS 1.3 默认算法
+ * - **单次操作**：不需要单独计算 HMAC
+ * 
+ * ## 安全注意
+ * 
+ * - IV 必须唯一：同一密钥绝不能重复使用同一 IV
+ * - IV 长度：推荐 12 字节（96 位）
+ * - 密钥管理：加密次数达到 2^32 后应更换密钥
+ * 
+ * @example
+ * ```typescript
+ * const gcm = new AESGCMEncryptor()
+ * 
+ * // 加密
+ * const encrypted = await gcm.encrypt('敏感数据', '密码123', {
+ *   keySize: 256,
+ *   additionalData: 'header' // 可选的附加认证数据
+ * })
+ * 
+ * // 解密（自动验证认证标签）
+ * const decrypted = await gcm.decrypt(encrypted, '密码123')
+ * if (decrypted.success) {
+ *   console.log(decrypted.data) // '敏感数据'
+ * }
+ * ```
+ */
+export class AESGCMEncryptor {
+  private readonly subtle: SubtleCrypto | undefined
+
+  constructor() {
+    this.subtle = getSubtle()
+  }
+
+  /**
+   * 检查 AES-GCM 是否可用
+   */
+  isAvailable(): boolean {
+    return this.subtle !== undefined
+  }
+
+  /**
+   * AES-GCM 加密
+   * 
+   * @param data - 明文数据
+   * @param key - 加密密钥
+   * @param options - 加密选项
+   * @returns 加密结果
+   */
+  async encrypt(
+    data: string,
+    key: string,
+    options: AESGCMOptions = {},
+  ): Promise<AESGCMEncryptResult> {
+    const keySize = options.keySize || 256
+    const tagLength = options.tagLength || 128
+
+    if (!this.subtle) {
+      return {
+        success: false,
+        algorithm: 'AES-GCM',
+        keySize,
+        iv: '',
+        error: 'WebCrypto API not available',
+        usingWebCrypto: false,
+      }
+    }
+
+    try {
+      // 准备 IV（12 字节是 GCM 的推荐长度）
+      const iv = options.iv
+        ? this.hexToBytes(options.iv)
+        : crypto.getRandomValues(new Uint8Array(12))
+
+      // 准备密钥
+      const keyBytes = await this.prepareKey(key, keySize)
+
+      // 导入密钥
+      const cryptoKey = await this.subtle.importKey(
+        'raw',
+        keyBytes,
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt'],
+      )
+
+      // 准备加密参数
+      const params: AesGcmParams = {
+        name: 'AES-GCM',
+        iv,
+        tagLength,
+      }
+
+      // 添加附加认证数据
+      if (options.additionalData) {
+        params.additionalData = new TextEncoder().encode(options.additionalData)
+      }
+
+      // 加密
+      const dataBytes = new TextEncoder().encode(data)
+      const encrypted = await this.subtle.encrypt(params, cryptoKey, dataBytes)
+
+      return {
+        success: true,
+        data: this.bytesToBase64(new Uint8Array(encrypted)),
+        algorithm: 'AES-GCM',
+        keySize,
+        iv: this.bytesToHex(iv),
+        usingWebCrypto: true,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        algorithm: 'AES-GCM',
+        keySize,
+        iv: '',
+        error: error instanceof Error ? error.message : 'Encryption failed',
+        usingWebCrypto: true,
+      }
+    }
+  }
+
+  /**
+   * AES-GCM 解密
+   * 
+   * @param encryptedData - 加密数据（Base64 字符串或加密结果对象）
+   * @param key - 解密密钥
+   * @param options - 解密选项
+   * @returns 解密结果
+   */
+  async decrypt(
+    encryptedData: string | AESGCMEncryptResult,
+    key: string,
+    options: AESGCMOptions = {},
+  ): Promise<WebCryptoDecryptResult> {
+    const keySize = options.keySize || 256
+    const tagLength = options.tagLength || 128
+
+    if (!this.subtle) {
+      return {
+        success: false,
+        algorithm: 'AES-GCM',
+        error: 'WebCrypto API not available',
+        usingWebCrypto: false,
+      }
+    }
+
+    try {
+      // 提取参数
+      let ciphertext: string
+      let iv: string
+
+      if (typeof encryptedData === 'string') {
+        ciphertext = encryptedData
+        iv = options.iv || ''
+        if (!iv) {
+          throw new Error('IV is required for decryption')
+        }
+      } else {
+        ciphertext = encryptedData.data || ''
+        iv = encryptedData.iv || options.iv || ''
+      }
+
+      // 准备密钥
+      const keyBytes = await this.prepareKey(key, keySize)
+
+      // 导入密钥
+      const cryptoKey = await this.subtle.importKey(
+        'raw',
+        keyBytes,
+        { name: 'AES-GCM' },
+        false,
+        ['decrypt'],
+      )
+
+      // 准备解密参数
+      const params: AesGcmParams = {
+        name: 'AES-GCM',
+        iv: this.hexToBytes(iv),
+        tagLength,
+      }
+
+      // 添加附加认证数据
+      if (options.additionalData) {
+        params.additionalData = new TextEncoder().encode(options.additionalData)
+      }
+
+      // 解密（自动验证认证标签）
+      const cipherBytes = this.base64ToBytes(ciphertext)
+      const decrypted = await this.subtle.decrypt(params, cryptoKey, cipherBytes)
+
+      return {
+        success: true,
+        data: new TextDecoder().decode(decrypted),
+        algorithm: 'AES-GCM',
+        usingWebCrypto: true,
+        authVerified: true, // WebCrypto GCM 解密成功即表示验证通过
+      }
+    } catch (error) {
+      return {
+        success: false,
+        algorithm: 'AES-GCM',
+        error: error instanceof Error ? error.message : 'Decryption failed',
+        usingWebCrypto: true,
+        authVerified: false,
+      }
+    }
+  }
+
+  /**
+   * 准备密钥
+   */
+  private async prepareKey(key: string, keySize: number): Promise<Uint8Array> {
+    const keyLength = keySize / 8
+
+    // 如果是十六进制密钥
+    if (/^[0-9a-f]+$/i.test(key) && key.length === keyLength * 2) {
+      return this.hexToBytes(key)
+    }
+
+    // 使用 PBKDF2 派生密钥
+    return await this.deriveKey(key, keyLength)
+  }
+
+  /**
+   * 使用 PBKDF2 派生密钥
+   */
+  private async deriveKey(password: string, length: number): Promise<Uint8Array> {
+    if (!this.subtle) {
+      throw new Error('WebCrypto not available')
+    }
+
+    const encoder = new TextEncoder()
+    const passwordBytes = encoder.encode(password)
+    const saltBytes = await crypto.subtle.digest('SHA-256', passwordBytes)
+
+    const keyMaterial = await this.subtle.importKey(
+      'raw',
+      passwordBytes,
+      'PBKDF2',
+      false,
+      ['deriveBits'],
+    )
+
+    const derivedBits = await this.subtle.deriveBits(
+      {
+        name: 'PBKDF2',
+        salt: saltBytes,
+        iterations: 100000,
+        hash: 'SHA-256',
+      },
+      keyMaterial,
+      length * 8,
+    )
+
+    return new Uint8Array(derivedBits)
+  }
+
+  private hexToBytes(hex: string): Uint8Array {
+    const bytes = new Uint8Array(hex.length / 2)
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = Number.parseInt(hex.substr(i, 2), 16)
+    }
+    return bytes
+  }
+
+  private bytesToHex(bytes: Uint8Array): string {
+    return Array.from(bytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+  }
+
+  private base64ToBytes(base64: string): Uint8Array {
+    const binaryString = atob(base64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    return bytes
+  }
+
+  private bytesToBase64(bytes: Uint8Array): string {
+    const binaryString = String.fromCharCode(...bytes)
+    return btoa(binaryString)
+  }
+}
+
+// 创建单例实例
+const webCryptoAESInstance = new WebCryptoAES()
+const aesGCMInstance = new AESGCMEncryptor()
+
+/**
+ * WebCrypto 便捷函数
+ * 
+ * 自动使用 WebCrypto API（如果支持）或降级到 CryptoJS。
+ * 
+ * @example
+ * ```typescript
+ * // AES 加密（自动选择最优实现）
+ * const result = await webcrypto.aes.encrypt('Hello', 'password', {
+ *   keySize: 256,
+ *   mode: 'GCM'  // 推荐使用 GCM 模式
+ * })
+ * 
+ * if (result.usingWebCrypto) {
+ *   console.log('使用硬件加速')
+ * }
+ * 
+ * // AES-GCM 认证加密（推荐）
+ * const gcmResult = await webcrypto.gcm.encrypt('敏感数据', 'password')
+ * const decrypted = await webcrypto.gcm.decrypt(gcmResult, 'password')
+ * ```
+ */
 export const webcrypto = {
   /**
    * 检查 WebCrypto 支持
@@ -503,31 +880,75 @@ export const webcrypto = {
   isSupported: isWebCryptoSupported,
 
   /**
-   * AES 加密/解密
+   * AES 加密/解密（自动降级）
    */
   aes: {
     /**
-     * 加密
+     * AES 加密
+     * 
+     * 支持 CBC、CTR、GCM 模式。
+     * 如果 WebCrypto 不可用或模式不支持，自动降级到 CryptoJS。
      */
     encrypt: async (
       data: string,
       key: string,
       options?: AESOptions,
-    ): Promise<EncryptResult & { usingWebCrypto?: boolean }> => {
-      const encryptor = new WebCryptoAES()
-      return await encryptor.encrypt(data, key, options)
+    ): Promise<WebCryptoEncryptResult> => {
+      return await webCryptoAESInstance.encrypt(data, key, options)
     },
 
     /**
-     * 解密
+     * AES 解密
      */
     decrypt: async (
       encryptedData: string | EncryptResult,
       key: string,
       options?: AESOptions,
-    ): Promise<DecryptResult & { usingWebCrypto?: boolean }> => {
-      const encryptor = new WebCryptoAES()
-      return await encryptor.decrypt(encryptedData, key, options)
+    ): Promise<WebCryptoDecryptResult> => {
+      return await webCryptoAESInstance.decrypt(encryptedData, key, options)
+    },
+  },
+
+  /**
+   * AES-GCM 认证加密（推荐）
+   * 
+   * AES-GCM 提供数据加密和完整性验证，是 TLS 1.3 的默认算法。
+   * 仅在 WebCrypto 可用时工作。
+   */
+  gcm: {
+    /**
+     * 检查 AES-GCM 是否可用
+     */
+    isAvailable: (): boolean => aesGCMInstance.isAvailable(),
+
+    /**
+     * AES-GCM 加密
+     * 
+     * @param data - 明文数据
+     * @param key - 加密密钥
+     * @param options - 加密选项
+     */
+    encrypt: async (
+      data: string,
+      key: string,
+      options?: AESGCMOptions,
+    ): Promise<AESGCMEncryptResult> => {
+      return await aesGCMInstance.encrypt(data, key, options)
+    },
+
+    /**
+     * AES-GCM 解密
+     * 
+     * @param encryptedData - 加密数据
+     * @param key - 解密密钥
+     * @param options - 解密选项
+     */
+    decrypt: async (
+      encryptedData: string | AESGCMEncryptResult,
+      key: string,
+      options?: AESGCMOptions,
+    ): Promise<WebCryptoDecryptResult> => {
+      return await aesGCMInstance.decrypt(encryptedData, key, options)
     },
   },
 }

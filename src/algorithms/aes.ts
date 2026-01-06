@@ -716,16 +716,62 @@ export class AESEncryptor implements IEncryptor {
 }
 
 /**
+ * AES 加密器单例管理
+ * 
+ * 使用单例模式避免重复创建 AESEncryptor 实例，提升性能。
+ * 静态缓存（密钥派生、模式对象等）在所有调用间共享。
+ */
+class AESEncryptorSingleton {
+  private static instance: AESEncryptor | null = null
+
+  /**
+   * 获取单例实例
+   */
+  static getInstance(): AESEncryptor {
+    if (!this.instance) {
+      this.instance = new AESEncryptor()
+    }
+    return this.instance
+  }
+
+  /**
+   * 重置单例（主要用于测试）
+   */
+  static resetInstance(): void {
+    this.instance = null
+  }
+}
+
+/**
  * AES 加密便捷函数
+ * 
+ * 使用单例模式，避免每次调用都创建新的 AESEncryptor 实例。
+ * 性能优势：
+ * - 避免重复实例化开销
+ * - 静态缓存（密钥派生、模式对象）共享
+ * - 内存使用更稳定
  */
 export const aes = {
   /**
    * AES 加密
+   * 
+   * @param data - 要加密的明文数据
+   * @param key - 加密密钥（支持密码字符串或十六进制密钥）
+   * @param options - 加密选项
+   * @returns 加密结果对象
+   * 
+   * @example
+   * ```typescript
+   * const result = aes.encrypt('Hello World', 'my-secret-key')
+   * if (result.success) {
+   *   console.log(result.data) // Base64 密文
+   *   console.log(result.iv)   // 十六进制 IV
+   * }
+   * ```
    */
   encrypt: (data: string, key: string, options?: AESOptions): EncryptResult => {
     try {
-      const encryptor = new AESEncryptor()
-      return encryptor.encrypt(data, key, options)
+      return AESEncryptorSingleton.getInstance().encrypt(data, key, options)
     } catch (error) {
       const opts = { ...AESEncryptor.getDefaultOptions(), ...options }
       if (error instanceof Error) {
@@ -753,6 +799,20 @@ export const aes = {
 
   /**
    * AES 解密
+   * 
+   * @param encryptedData - 加密数据（字符串或 EncryptResult 对象）
+   * @param key - 解密密钥
+   * @param options - 解密选项（如果 encryptedData 是字符串，需要提供 IV）
+   * @returns 解密结果对象
+   * 
+   * @example
+   * ```typescript
+   * // 使用 EncryptResult 对象解密（推荐）
+   * const decrypted = aes.decrypt(encryptResult, 'my-secret-key')
+   * 
+   * // 使用字符串解密（需要提供 IV）
+   * const decrypted = aes.decrypt(ciphertext, 'my-secret-key', { iv: '...' })
+   * ```
    */
   decrypt: (
     encryptedData: string | EncryptResult,
@@ -760,8 +820,7 @@ export const aes = {
     options?: AESOptions,
   ): DecryptResult => {
     try {
-      const encryptor = new AESEncryptor()
-      return encryptor.decrypt(encryptedData, key, options)
+      return AESEncryptorSingleton.getInstance().decrypt(encryptedData, key, options)
     } catch (error) {
       const opts = { ...AESEncryptor.getDefaultOptions(), ...options }
       if (error instanceof Error) {

@@ -187,15 +187,31 @@ export interface KeyGenerationOptions {
 }
 
 /**
- * 加密器接口
- * 注意：使用any以支持各算法的特定选项类型，各算法实现内部保持类型安全
+ * 所有加密选项的联合类型（用于通用方法）
  */
-export interface IEncryptor {
-  encrypt: (data: string, key: string, options?: Record<string, unknown>) => EncryptResult | Promise<EncryptResult>
+export type AllEncryptionOptions = AESOptions | RSAOptions | DESOptions | TripleDESOptions | BlowfishOptions
+
+/**
+ * 根据算法类型获取对应的选项类型
+ */
+export type OptionsForAlgorithm<T extends EncryptionAlgorithm> = 
+  T extends 'AES' ? AESOptions :
+  T extends 'RSA' ? RSAOptions :
+  T extends 'DES' ? DESOptions :
+  T extends '3DES' ? TripleDESOptions :
+  T extends 'Blowfish' ? BlowfishOptions :
+  never
+
+/**
+ * 加密器接口
+ * 使用泛型约束以支持各算法的特定选项类型
+ */
+export interface IEncryptor<TOptions = AllEncryptionOptions> {
+  encrypt: (data: string, key: string, options?: TOptions) => EncryptResult | Promise<EncryptResult>
   decrypt: (
     encryptedData: string | EncryptResult,
     key: string,
-    options?: Record<string, unknown>
+    options?: TOptions
   ) => DecryptResult | Promise<DecryptResult>
 }
 
